@@ -1,0 +1,468 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Clevrbloom — make a wish</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;1,9..144,300;1,9..144,400&amp;family=Manrope:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+:root{--accent:#E8B15A}
+body{margin:0;background:#2A130E}
+a{color:#F5EDE4}a:hover{color:#E8B15A}
+:focus-visible{outline:2px solid #E8B15A;outline-offset:3px}
+.cb-hero{height:820px}
+.cb-hero-copy{align-items:center}
+@media (max-width:859px){
+.cb-hero{height:1020px}
+.cb-hero-copy{align-items:flex-start;padding-top:56px !important}
+}
+</style>
+</head>
+<body>
+<div style="font-family: 'Manrope', system-ui, sans-serif; color: #F5EDE4; background: #2A130E; min-width: 0">
+
+<header style="position: relative; z-index: 2; border-bottom: 1px solid rgba(245,237,228,0.10)">
+<nav aria-label="Main" style="max-width: 1200px; margin: 0 auto; padding: 22px 24px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px 32px">
+<a href="#top" style="display: flex; align-items: center; gap: 10px; text-decoration: none; color: #F5EDE4">
+<svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="#F5EDE4" stroke-width="1.2" stroke-linecap="round" aria-hidden="true"><circle cx="14" cy="11" r="1.6"></circle><path d="M14 11V27"></path><path d="M14 11L14 2M14 11L21 4M14 11L23 11M14 11L21 18M14 11L7 18M14 11L5 11M14 11L7 4"></path></svg>
+<span style="font-family: 'Fraunces', serif; font-size: 26px; font-weight: 400; letter-spacing: -0.01em">clevrbloom</span>
+</a>
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 28px; font-size: 15px">
+<a href="#services" style="text-decoration: none; padding: 10px 0">Services</a>
+<a href="#process" style="text-decoration: none; padding: 10px 0">How it grows</a>
+<a href="#work" style="text-decoration: none; padding: 10px 0">Work</a>
+<a href="#contact" style="text-decoration: none; padding: 12px 20px; border: 1px solid rgba(245,237,228,0.35); border-radius: 999px">Tell us your wish</a>
+</div>
+</nav>
+</header>
+
+<section id="top" class="cb-hero" data-on-mousemove="onMove" style="position: relative; overflow: hidden">
+<canvas data-ref="canvasRef" aria-hidden="true" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: block; pointer-events: none"></canvas>
+<div class="cb-hero-copy" style="position: relative; z-index: 1; max-width: 1200px; height: 100%; margin: 0 auto; padding: 0 24px; box-sizing: border-box; display: flex">
+<div style="max-width: 580px; display: flex; flex-direction: column; gap: 28px">
+<p style="margin: 0; font-size: 13px; letter-spacing: 0.18em; text-transform: uppercase; color: #CBB6A6">Branding &amp; web design for businesses</p>
+<h1 style="margin: 0; font-family: 'Fraunces', serif; font-weight: 300; font-size: clamp(46px, 6vw, 86px); line-height: 1.02; letter-spacing: -0.025em">Every great brand starts as a <em style="font-style: italic; color: var(--accent)">wish.</em></h1>
+<p style="margin: 0; font-size: 19px; line-height: 1.6; color: #DCCABD; max-width: 500px">The name people remember. The website that finally feels like you. Clevrbloom takes the thing you've been hoping for and grows it into a brand that carries — far past where you'd ever blow it yourself.</p>
+<div style="display: flex; flex-wrap: wrap; gap: 14px; align-items: center">
+<button type="button" data-on-click="makeWish" style="font: inherit; font-size: 16px; font-weight: 600; cursor: pointer; border: none; border-radius: 999px; padding: 16px 30px; min-height: 52px; background: var(--accent); color: #2A130E">Make a wish</button>
+<a href="#work" style="font-size: 16px; font-weight: 500; text-decoration: none; padding: 15px 26px; min-height: 52px; box-sizing: border-box; border-radius: 999px; border: 1px solid rgba(245,237,228,0.35); display: inline-flex; align-items: center">See what's bloomed</a>
+</div>
+<div data-if="notWished" style="display: contents">
+<p style="margin: 0; font-size: 14px; color: #B9A293">Press the button, or sweep your cursor across to stir the breeze.</p>
+</div>
+<div data-if="wished" style="display: contents">
+<p style="margin: 0; font-size: 14px; color: #B9A293">There it goes. Wishes travel further than you'd think.</p>
+</div>
+</div>
+</div>
+</section>
+
+</div>
+<script>
+// Minimal stand-in for the design canvas runtime, so the component class runs as-is.
+class DCLogic {
+  constructor() { this.props = {}; this.state = {}; }
+  setState(patch) {
+    Object.assign(this.state, typeof patch === 'function' ? patch(this.state) : patch);
+    if (this._render) this._render();
+  }
+}
+
+class Component extends DCLogic {
+  renderVals() {
+    var s = this.state || {};
+    var self = this;
+    if (!this._ref) {
+      this._ref = function (el) {
+        if (el && el !== self.cv) { self._teardown(); self._setup(el); }
+        else if (!el) { self._teardown(); self.cv = null; }
+      };
+      this._wish = function () {
+        self._blow();
+        var n = ((self.state && self.state.wishes) || 0) + 1;
+        self.setState({ wishes: n });
+      };
+      this._move = function (e) {
+        var x = e.clientX;
+        if (self._mx != null) {
+          var dx = x - self._mx;
+          self.gust = Math.max(-1.6, Math.min(1.6, (self.gust || 0) + dx * 0.005));
+        }
+        self._mx = x;
+      };
+      this._send = function () { self.setState({ sent: true }); };
+    }
+    var w = (s.wishes || 0) > 0;
+    return {
+      accent: this.props.accent ?? '#E8B15A',
+      canvasRef: this._ref,
+      makeWish: this._wish,
+      onMove: this._move,
+      sendWish: this._send,
+      wished: w,
+      notWished: !w,
+      sent: !!s.sent,
+      notSent: !s.sent
+    };
+  }
+
+  componentWillUnmount() { this._teardown(); this.cv = null; }
+
+  _teardown() {
+    if (this.raf) cancelAnimationFrame(this.raf);
+    this.raf = 0;
+    if (this.ro) this.ro.disconnect();
+    this.ro = null;
+  }
+
+  _setup(el) {
+    var self = this;
+    this.cv = el;
+    this.ctx = el.getContext('2d');
+    this.reduced = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    this.t0 = performance.now();
+    this.last = this.t0;
+    this.free = [];
+    this.pending = [];
+    this.gust = this.gust || 0;
+    this.nextAmbient = 5200;
+    if (!this.seeds) this._build();
+    this._resize();
+    if (window.ResizeObserver) {
+      this.ro = new ResizeObserver(function () { self._resize(); });
+      this.ro.observe(el);
+    }
+    var loop = function (now) {
+      if (!self.cv) return;
+      self._frame(now);
+      self.raf = requestAnimationFrame(loop);
+    };
+    this.raf = requestAnimationFrame(loop);
+  }
+
+  _build() {
+    var N = 1400, F = 14, ga = Math.PI * (3 - Math.sqrt(5));
+    this.N = N;
+    this.seeds = [];
+    for (var i = 0; i < N; i++) {
+      var y = 1 - 2 * (i + 0.5) / N, r = Math.sqrt(1 - y * y), th = ga * i;
+      var d = [Math.cos(th) * r + (Math.random() - 0.5) * 0.06, y + (Math.random() - 0.5) * 0.06, Math.sin(th) * r + (Math.random() - 0.5) * 0.06];
+      var dl = Math.hypot(d[0], d[1], d[2]);
+      d = [d[0] / dl, d[1] / dl, d[2] / dl];
+      var a = Math.abs(d[1]) < 0.9 ? [0, 1, 0] : [1, 0, 0];
+      var u = [d[1] * a[2] - d[2] * a[1], d[2] * a[0] - d[0] * a[2], d[0] * a[1] - d[1] * a[0]];
+      var ul = Math.hypot(u[0], u[1], u[2]);
+      u = [u[0] / ul, u[1] / ul, u[2] / ul];
+      var v = [d[1] * u[2] - d[2] * u[1], d[2] * u[0] - d[0] * u[2], d[0] * u[1] - d[1] * u[0]];
+      var fil = [];
+      for (var k = 0; k < F; k++) {
+        var ph = (k / F) * Math.PI * 2 + Math.random() * 0.45;
+        fil.push(Math.cos(ph), Math.sin(ph), 0.62 + Math.random() * 0.72);
+      }
+      var jt = 0.42 * Math.sqrt(Math.random()), ja = Math.random() * 6.2832;
+      var an = [d[0] + jt * (Math.cos(ja) * u[0] + Math.sin(ja) * v[0]), d[1] + jt * (Math.cos(ja) * u[1] + Math.sin(ja) * v[1]), d[2] + jt * (Math.cos(ja) * u[2] + Math.sin(ja) * v[2])];
+      var anl = Math.hypot(an[0], an[1], an[2]);
+      an = [an[0] / anl, an[1] / anl, an[2] / anl];
+      this.seeds.push({ d: d, u: u, v: v, a: an, fil: fil, len: 0.88 + Math.random() * 0.18, open: 0.88 + Math.random() * 0.26, delay: Math.random() * 0.4, gone: false, pend: false, regrow: 0, born: -1e9 });
+    }
+    this.rot = new Float32Array(N * 12);
+    this.bk = new Uint8Array(N);
+  }
+
+  _resize() {
+    var el = this.cv;
+    if (!el) return;
+    var W = Math.max(1, el.clientWidth), H = Math.max(1, el.clientHeight);
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    el.width = Math.round(W * dpr);
+    el.height = Math.round(H * dpr);
+    this.W = W; this.H = H; this.dpr = dpr;
+    if (W < 860) { this.cx = W * 0.5; this.cy = H * 0.74; this.R = Math.min(W * 0.34, 190); }
+    else { this.cx = W * 0.72; this.cy = H * 0.44; this.R = Math.min(H * 0.3, W * 0.19, 290); }
+  }
+
+  _pick(n) {
+    var S = this.seeds, rot = this.rot, c = [];
+    for (var i = 0; i < S.length; i++) {
+      var s = S[i];
+      if (s.gone || s.pend) continue;
+      c.push([rot[i * 12] + 0.3 * rot[i * 12 + 2] + Math.random() * 0.9, i]);
+    }
+    c.sort(function (a, b) { return b[0] - a[0]; });
+    var out = [];
+    for (var j = 0; j < Math.min(n, c.length); j++) { out.push(c[j][1]); S[c[j][1]].pend = true; }
+    return out;
+  }
+
+  _blow() {
+    if (!this.seeds || !this.cv) return;
+    var t = performance.now() - this.t0;
+    var ids = this._pick(180);
+    for (var r = 0; r < ids.length; r++) {
+      this.pending.push({ i: ids[r], at: t + (r / ids.length) * 1300 + Math.random() * 250 });
+    }
+    this.gust = Math.min(1.6, (this.gust || 0) + 0.9);
+  }
+
+  _detach(i, t, hx, hy) {
+    var s = this.seeds[i];
+    s.pend = false;
+    if (s.gone) return;
+    var o = i * 12, rot = this.rot, R = this.R;
+    s.gone = true;
+    s.regrow = t + 9000 + Math.random() * 6000;
+    if (this.free.length > 420) return;
+    var d = [rot[o], rot[o + 1], rot[o + 2]];
+    this.free.push({
+      x: hx + d[0] * 0.1 * R, y: hy - d[1] * 0.1 * R,
+      vx: d[0] * 70 + 25, vy: -d[1] * 70 - 10,
+      d: d, fil: s.fil, len: s.len, open: s.open,
+      ph: Math.random() * 6.28, age: 0, tilt: (Math.random() - 0.5) * 0.7, spin: (Math.random() - 0.5) * 0.8
+    });
+  }
+
+  _frame(now) {
+    var ctx = this.ctx, W = this.W, H = this.H, R = this.R;
+    if (!ctx || !W) return;
+    var t = now - this.t0, dt = Math.min(0.05, Math.max(0, (now - this.last) / 1000));
+    this.last = now;
+    var red = this.reduced;
+    ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+    ctx.clearRect(0, 0, W, H);
+
+    this.gust *= Math.pow(0.3, dt);
+    var g = this.gust;
+    var sway = red ? 0 : (Math.sin(t / 1900) * 0.03 + Math.sin(t / 830 + 1) * 0.01 + g * 0.05);
+    var p = red ? 1 : Math.min(1, t / 4200);
+    var ay = red ? 0.5 : 0.5 + t * 0.00005, ax = -0.22;
+    var cya = Math.cos(ay), sya = Math.sin(ay), cxa = Math.cos(ax), sxa = Math.sin(ax), cs = Math.cos(sway), ss = Math.sin(sway);
+
+    var bx = this.cx, by = H + 40, Ls = by - this.cy;
+    var hx = bx + Math.sin(sway) * Ls, hy = by - Math.cos(sway) * Ls;
+
+    // soft light behind the head
+    var gr = ctx.createRadialGradient(hx, hy, R * 0.1, hx, hy, R * 1.6);
+    gr.addColorStop(0, 'rgba(255,236,220,0.07)');
+    gr.addColorStop(1, 'rgba(255,236,220,0)');
+    ctx.fillStyle = gr;
+    ctx.fillRect(hx - R * 1.6, hy - R * 1.6, R * 3.2, R * 3.2);
+
+    // stem
+    var grow = red ? 1 : Math.min(1, t / 900);
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(bx, by);
+    ctx.quadraticCurveTo(bx + Math.sin(sway) * Ls * 0.35 - R * 0.06, by - Ls * 0.55, hx, hy);
+    ctx.strokeStyle = 'rgba(143,163,117,' + (0.9 * grow) + ')';
+    ctx.lineWidth = Math.max(3, R * 0.028);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(bx - 1, by);
+    ctx.quadraticCurveTo(bx + Math.sin(sway) * Ls * 0.35 - R * 0.06 - 1, by - Ls * 0.55, hx - 1, hy);
+    ctx.strokeStyle = 'rgba(210,225,180,' + (0.25 * grow) + ')';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    var rot = this.rot, bk = this.bk, S = this.seeds, N = this.N;
+    var R3 = function (x, y, z, o) {
+      var x1 = x * cya + z * sya, z1 = -x * sya + z * cya;
+      var y1 = y * cxa - z1 * sxa, z2 = y * sxa + z1 * cxa;
+      rot[o] = x1 * cs + y1 * ss;
+      rot[o + 1] = -x1 * ss + y1 * cs;
+      rot[o + 2] = z2;
+    };
+    for (var i = 0; i < N; i++) {
+      var s = S[i];
+      if (s.gone) { bk[i] = 255; continue; }
+      var o = i * 12;
+      R3(s.d[0], s.d[1], s.d[2], o);
+      R3(s.u[0], s.u[1], s.u[2], o + 3);
+      R3(s.v[0], s.v[1], s.v[2], o + 6);
+      R3(s.a[0], s.a[1], s.a[2], o + 9);
+      var z = rot[o + 2];
+      var lit = rot[o] * -0.45 + rot[o + 1] * 0.55 + z * 0.7;
+      bk[i] = (z < -0.45 ? 0 : z < 0 ? 1 : z < 0.45 ? 2 : 3) * 2 + (lit > 0.25 ? 1 : 0);
+    }
+
+    var r0 = 0.1;
+    var eOf = function (s) {
+      var e = Math.max(0, Math.min(1, (p - s.delay) / 0.6));
+      e = 1 - Math.pow(1 - e, 3);
+      var rg = Math.max(0, Math.min(1, (t - s.born) / 2600));
+      rg = 1 - Math.pow(1 - rg, 3);
+      return Math.min(e, rg);
+    };
+    var seedPath = function (i, e, mode) {
+      var s = S[i], o = i * 12;
+      var dx = rot[o], dy = rot[o + 1];
+      var bl = r0 + 0.56 * s.len * e;
+      var tx = hx + dx * bl * R, ty = hy - dy * bl * R;
+      if (mode === 1) {
+        ctx.moveTo(hx + dx * r0 * R, hy - dy * r0 * R);
+        ctx.lineTo(tx, ty);
+        return;
+      }
+      var C = (0.12 + 0.95 * e) * s.open, cc = Math.cos(C), sc = Math.sin(C);
+      var L = 0.36 * s.len * (0.25 + 0.75 * e) * R;
+      var ux = rot[o + 3], uy = rot[o + 4], vx = rot[o + 6], vy = rot[o + 7], px = rot[o + 9], py = rot[o + 10];
+      var f = s.fil;
+      var sz = rot[o + 2];
+      var rl = Math.hypot(dx, dy), rx = rl > 0.001 ? dx / rl : 0, ry = rl > 0.001 ? dy / rl : 0;
+      var bias = Math.max(0, Math.min(1, sz)) * 0.62 * Math.max(0, Math.min(1, (rl - 0.12) / 0.35));
+      var step = (sz > 0.55 && rl > 0.35) ? 6 : 3;
+      for (var k = 0; k < f.length; k += step) {
+        var ex = cc * px + sc * (f[k] * ux + f[k + 1] * vx);
+        var ey = cc * py + sc * (f[k] * uy + f[k + 1] * vy);
+        // every hair keeps a long visible strand, even when its seed faces us
+        var m = Math.hypot(ex, ey);
+        if (m < 0.85) {
+          if (m > 0.02) { ex *= 0.85 / m; ey *= 0.85 / m; }
+          else { ex = f[k] * 0.85; ey = f[k + 1] * 0.85; }
+          m = 0.85;
+        }
+        // front hairs fan outward from the centre, like the fuzz at the rim
+        if (bias > 0 && rl > 0.001) {
+          var bx2 = ex / m * (1 - bias) + rx * bias, by2 = ey / m * (1 - bias) + ry * bias;
+          var bn = Math.hypot(bx2, by2) || 1;
+          ex = bx2 / bn * m; ey = by2 / bn * m;
+        }
+        ctx.moveTo(tx, ty);
+        ctx.lineTo(tx + ex * L * f[k + 2], ty - ey * L * f[k + 2]);
+      }
+    };
+    var alphas = [0.04, 0.07, 0.22, 0.42];
+    var drawBucket = function (b, mode, mul) {
+      var depth = b >> 1, light = b & 1;
+      ctx.beginPath();
+      for (var i = 0; i < N; i++) if (bk[i] === b) seedPath(i, eOf(S[i]), mode);
+      ctx.strokeStyle = 'rgba(248,240,230,' + (alphas[depth] * mul * (light ? 1.2 : 0.72)).toFixed(3) + ')';
+      ctx.lineWidth = depth === 3 ? 0.65 : depth > 1 ? 0.6 : 0.45;
+      ctx.stroke();
+    };
+    var drawDepth = function (dep, beakMul) {
+      for (var l = 0; l < 2; l++) { drawBucket(dep * 2 + l, 1, beakMul); drawBucket(dep * 2 + l, 2, 1); }
+    };
+    // back hemisphere
+    drawDepth(0, 0.2);
+    drawDepth(1, 0.25);
+    ctx.beginPath();
+    ctx.arc(hx, hy, r0 * R * 1.05, 0, Math.PI * 2);
+    ctx.fillStyle = '#6B4A2E';
+    ctx.fill();
+    // the dense front fluff hides the inside of the head
+    var pe = 1 - Math.pow(1 - Math.min(1, p / 0.85), 3);
+    var rr = R * (0.2 + 0.62 * pe);
+    var oc = ctx.createRadialGradient(hx, hy, 0, hx, hy, rr);
+    oc.addColorStop(0, 'rgba(42,19,14,0.55)');
+    oc.addColorStop(0.5, 'rgba(42,19,14,0.72)');
+    oc.addColorStop(1, 'rgba(42,19,14,0)');
+    ctx.fillStyle = oc;
+    ctx.beginPath();
+    ctx.arc(hx, hy, rr, 0, Math.PI * 2);
+    ctx.fill();
+    // soft body light from the upper left gives the sphere volume
+    var hz = ctx.createRadialGradient(hx - rr * 0.3, hy - rr * 0.35, rr * 0.05, hx, hy, rr);
+    hz.addColorStop(0, 'rgba(250,242,232,0.08)');
+    hz.addColorStop(0.7, 'rgba(250,242,232,0.02)');
+    hz.addColorStop(1, 'rgba(250,242,232,0)');
+    ctx.fillStyle = hz;
+    ctx.beginPath();
+    ctx.arc(hx, hy, rr, 0, Math.PI * 2);
+    ctx.fill();
+    // front hemisphere: stalks pointing at us sit hidden behind their own fluff
+    drawDepth(2, 0.25);
+    drawDepth(3, 0.12);
+
+    // detach, regrow, ambient drift
+    if (this.pending.length) {
+      var keep = [];
+      for (var q = 0; q < this.pending.length; q++) {
+        var pq = this.pending[q];
+        if (t >= pq.at) this._detach(pq.i, t, hx, hy); else keep.push(pq);
+      }
+      this.pending = keep;
+    }
+    for (var j = 0; j < N; j++) {
+      var sj = S[j];
+      if (sj.gone && t >= sj.regrow) { sj.gone = false; sj.born = t; }
+    }
+    if (!red && p >= 1 && t >= this.nextAmbient) {
+      var one = this._pick(1);
+      if (one.length) this.pending.push({ i: one[0], at: t });
+      this.nextAmbient = t + 1400 + Math.random() * 2200;
+    }
+
+    // seeds on the wind
+    var windX = 55 + 25 * Math.sin(t / 3100) + g * 170, windY = -16;
+    var kk = 1 - Math.exp(-dt * 0.9), ke = 1 - Math.exp(-dt * 1.3);
+    var fr = this.free, alive = [];
+    ctx.beginPath();
+    for (var m = 0; m < fr.length; m++) {
+      var f = fr[m];
+      f.age += dt;
+      f.vx += (windX + 20 * Math.sin(f.ph + t / 900) - f.vx) * kk;
+      f.vy += (windY + 22 * Math.sin(f.ph * 1.7 + t / 650) - f.vy) * kk;
+      f.x += f.vx * dt;
+      f.y += f.vy * dt;
+      if (f.x < -R * 1.3 || f.x > W + R * 1.3 || f.y < -R * 1.3 || f.y > H + R) continue;
+      alive.push(f);
+      var tl = f.tilt + f.vx * 0.0016;
+      var tg = [Math.sin(tl), Math.cos(tl), 0.25 * Math.sin(f.ph + t / 1300)];
+      var d = f.d;
+      d[0] += (tg[0] - d[0]) * ke; d[1] += (tg[1] - d[1]) * ke; d[2] += (tg[2] - d[2]) * ke;
+      var dl = Math.hypot(d[0], d[1], d[2]) || 1;
+      d[0] /= dl; d[1] /= dl; d[2] /= dl;
+      var a = Math.abs(d[1]) < 0.9 ? [0, 1, 0] : [1, 0, 0];
+      var u = [d[1] * a[2] - d[2] * a[1], d[2] * a[0] - d[0] * a[2], d[0] * a[1] - d[1] * a[0]];
+      var ul = Math.hypot(u[0], u[1], u[2]) || 1;
+      u = [u[0] / ul, u[1] / ul, u[2] / ul];
+      var v = [d[1] * u[2] - d[2] * u[1], d[2] * u[0] - d[0] * u[2], d[0] * u[1] - d[1] * u[0]];
+      var bl = 0.56 * f.len * R;
+      var tx = f.x + d[0] * bl, ty = f.y - d[1] * bl;
+      ctx.moveTo(f.x, f.y);
+      ctx.lineTo(tx, ty);
+      var C = 1.07 * f.open, cc = Math.cos(C), sc = Math.sin(C), L = 0.36 * f.len * R;
+      var w = f.spin * f.age, cw = Math.cos(w), sw = Math.sin(w);
+      var fl = f.fil;
+      for (var k = 0; k < fl.length; k += 3) {
+        var fc = fl[k] * cw - fl[k + 1] * sw, fs = fl[k] * sw + fl[k + 1] * cw;
+        var ex = cc * d[0] + sc * (fc * u[0] + fs * v[0]);
+        var ey = cc * d[1] + sc * (fc * u[1] + fs * v[1]);
+        ctx.moveTo(tx, ty);
+        ctx.lineTo(tx + ex * L * fl[k + 2], ty - ey * L * fl[k + 2]);
+      }
+    }
+    this.free = alive;
+    ctx.strokeStyle = 'rgba(248,240,230,0.32)';
+    ctx.lineWidth = 0.6;
+    ctx.stroke();
+  }
+}
+
+(function () {
+  var c = new Component();
+  var accent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim();
+  c.props = { accent: accent || '#E8B15A' };
+  var vals = {};
+  function render() {
+    vals = c.renderVals();
+    document.querySelectorAll('[data-if]').forEach(function (el) {
+      el.style.display = vals[el.getAttribute('data-if')] ? 'contents' : 'none';
+    });
+  }
+  c._render = render;
+  render();
+  document.querySelectorAll('[data-on-click]').forEach(function (el) {
+    el.addEventListener('click', function (e) { vals[el.getAttribute('data-on-click')](e); });
+  });
+  document.querySelectorAll('[data-on-mousemove]').forEach(function (el) {
+    el.addEventListener('mousemove', function (e) { vals[el.getAttribute('data-on-mousemove')](e); });
+  });
+  document.querySelectorAll('[data-ref]').forEach(function (el) {
+    vals[el.getAttribute('data-ref')](el);
+  });
+})();
+</script>
+</body>
+</html>
