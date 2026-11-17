@@ -7,21 +7,43 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;1,9..144,300;1,9..144,400&amp;family=Manrope:wght@400;500;600&amp;display=swap" rel="stylesheet">
 <style>
-:root{--accent:#E8B15A}
 body{margin:0;background:#2A130E}
 a{color:#F5EDE4}a:hover{color:#E8B15A}
 :focus-visible{outline:2px solid #E8B15A;outline-offset:3px}
 .cb-hero{height:820px}
 .cb-hero-copy{align-items:center}
+.cb-onb{min-height:820px}
 @media (max-width:859px){
 .cb-hero{height:1020px}
 .cb-hero-copy{align-items:flex-start;padding-top:56px !important}
+.cb-onb{min-height:1020px}
 }
+@media (prefers-reduced-motion: reduce){.cb-track{transition:none !important}}
+.cb-step{animation:cbStepIn 0.6s cubic-bezier(0.22,1,0.36,1) both}
+@keyframes cbStepIn{from{opacity:0;transform:translateX(28px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion: reduce){.cb-step{animation:none}}
+#cb-biz::placeholder{color:rgba(232,177,90,0.45)}
+#cb-biz:disabled{opacity:0.35}
+.cb-chip{font:inherit;font-size:14px;color:#F5EDE4;background:transparent;border:1px solid rgba(245,237,228,0.28);border-radius:999px;padding:9px 16px;min-height:44px;cursor:pointer;display:inline-flex;align-items:center;gap:8px;transition:border-color .2s,background .2s,color .2s}
+.cb-chip:hover{border-color:rgba(245,237,228,0.6)}
+.cb-chip-on,.cb-chip-on:hover{color:#E8B15A;border-color:#E8B15A;background:rgba(232,177,90,0.12)}
+#cb-other::placeholder{color:#A8907F}
+.cb-opt{background:transparent}
+.cb-opt:hover,.cb-opt:focus-visible{background:rgba(245,237,228,0.08)}
+.cb-opt-sel{color:#E8B15A !important;background:rgba(232,177,90,0.12) !important}
+.cb-list{scrollbar-width:thin;scrollbar-color:rgba(245,237,228,0.25) transparent}
+#cb-role-search::placeholder{color:#A8907F}
+button:disabled{opacity:0.4;cursor:not-allowed}
 </style>
 </head>
 <body>
-<div style="font-family: 'Manrope', system-ui, sans-serif; color: #F5EDE4; background: #2A130E; min-width: 0">
+<div id="app"></div>
+<template id="tpl">
+<div style="font-family: 'Manrope', system-ui, sans-serif; color: #F5EDE4; background: #2A130E; min-width: 0; position: relative; overflow: hidden">
+<canvas ref="{{canvasRef}}" aria-hidden="true" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: block; pointer-events: none; z-index: 3"></canvas>
+<div class="cb-track" style="display: flex; width: 200%; transform: translateX({{trackX}}); transition: transform 1.6s cubic-bezier(0.65, 0, 0.35, 1)">
 
+<div aria-hidden="{{heroAria}}" style="width: 50%; position: relative; visibility: {{heroVis}}">
 <header style="position: relative; z-index: 2; border-bottom: 1px solid rgba(245,237,228,0.10)">
 <nav aria-label="Main" style="max-width: 1200px; margin: 0 auto; padding: 22px 24px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px 32px">
 <a href="#top" style="display: flex; align-items: center; gap: 10px; text-decoration: none; color: #F5EDE4">
@@ -37,37 +59,327 @@ a{color:#F5EDE4}a:hover{color:#E8B15A}
 </nav>
 </header>
 
-<section id="top" class="cb-hero" data-on-mousemove="onMove" style="position: relative; overflow: hidden">
-<canvas data-ref="canvasRef" aria-hidden="true" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: block; pointer-events: none"></canvas>
+<section id="top" ref="{{heroRef}}" class="cb-hero" onMouseMove="{{onMove}}" style="position: relative; overflow: hidden">
 <div class="cb-hero-copy" style="position: relative; z-index: 1; max-width: 1200px; height: 100%; margin: 0 auto; padding: 0 24px; box-sizing: border-box; display: flex">
 <div style="max-width: 580px; display: flex; flex-direction: column; gap: 28px">
 <p style="margin: 0; font-size: 13px; letter-spacing: 0.18em; text-transform: uppercase; color: #CBB6A6">Branding &amp; web design for businesses</p>
-<h1 style="margin: 0; font-family: 'Fraunces', serif; font-weight: 300; font-size: clamp(46px, 6vw, 86px); line-height: 1.02; letter-spacing: -0.025em">Every great brand starts as a <em style="font-style: italic; color: var(--accent)">wish.</em></h1>
+<h1 style="margin: 0; font-family: 'Fraunces', serif; font-weight: 300; font-size: clamp(46px, 6vw, 86px); line-height: 1.02; letter-spacing: -0.025em">Every great brand starts as a <em style="font-style: italic; color: {{accent}}">wish.</em></h1>
 <p style="margin: 0; font-size: 19px; line-height: 1.6; color: #DCCABD; max-width: 500px">The name people remember. The website that finally feels like you. Clevrbloom takes the thing you've been hoping for and grows it into a brand that carries — far past where you'd ever blow it yourself.</p>
 <div style="display: flex; flex-wrap: wrap; gap: 14px; align-items: center">
-<button type="button" data-on-click="makeWish" style="font: inherit; font-size: 16px; font-weight: 600; cursor: pointer; border: none; border-radius: 999px; padding: 16px 30px; min-height: 52px; background: var(--accent); color: #2A130E">Make a wish</button>
+<button type="button" onClick="{{makeWish}}" style="font: inherit; font-size: 16px; font-weight: 600; cursor: pointer; border: none; border-radius: 999px; padding: 16px 30px; min-height: 52px; background: {{accent}}; color: #2A130E">Make a wish</button>
 <a href="#work" style="font-size: 16px; font-weight: 500; text-decoration: none; padding: 15px 26px; min-height: 52px; box-sizing: border-box; border-radius: 999px; border: 1px solid rgba(245,237,228,0.35); display: inline-flex; align-items: center">See what's bloomed</a>
 </div>
-<div data-if="notWished" style="display: contents">
+<sc-if value="{{notWished}}" hint-placeholder-val="{{ true }}">
 <p style="margin: 0; font-size: 14px; color: #B9A293">Press the button, or sweep your cursor across to stir the breeze.</p>
+</sc-if>
+<sc-if value="{{wished}}" hint-placeholder-val="{{ false }}">
+<p style="margin: 0; font-size: 14px; color: #B9A293">There it goes. Make it count.</p>
+</sc-if>
 </div>
-<div data-if="wished" style="display: contents">
-<p style="margin: 0; font-size: 14px; color: #B9A293">There it goes. Wishes travel further than you'd think.</p>
+</div>
+</section>
+</div>
+
+<div aria-hidden="{{onbAria}}" class="cb-onb" style="width: 50%; position: relative; visibility: {{onbVis}}; display: flex; flex-direction: column">
+<header style="border-bottom: 1px solid rgba(245,237,228,0.10)">
+<div style="max-width: 1200px; margin: 0 auto; padding: 22px 24px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px 32px">
+<div style="display: flex; align-items: center; gap: 18px">
+<button type="button" onClick="{{goBack}}" style="font: inherit; font-size: 15px; color: #F5EDE4; background: none; border: 1px solid rgba(245,237,228,0.28); border-radius: 999px; padding: 10px 18px 10px 14px; min-height: 44px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px">
+<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#F5EDE4" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 3L5 8L10 13"></path></svg>
+Back
+</button>
+<span style="font-family: 'Fraunces', serif; font-size: 24px; font-weight: 400; letter-spacing: -0.01em">clevrbloom</span>
+</div>
+</div>
+</header>
+
+<section style="flex: 1 1 auto; display: flex">
+<div style="max-width: 1200px; width: 100%; margin: 0 auto; padding: 0 24px 120px; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px">
+<div aria-hidden="true" style="width: 100%; height: 200px; position: relative; flex: 0 0 auto">
+<div ref="{{spotRef}}" style="position: absolute; left: 50%; top: 50%; width: 1px; height: 1px"></div>
+</div>
+<sc-if value="{{isStep1}}" hint-placeholder-val="{{ true }}">
+<div class="cb-step" style="width: 100%; max-width: 720px; min-width: 0; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 28px">
+<p style="margin: 0; font-size: 13px; letter-spacing: 0.18em; text-transform: uppercase; color: #CBB6A6">Let's plant your wish</p>
+<div style="width: 100%; display: flex; flex-wrap: wrap; align-items: baseline; justify-content: center; gap: 6px 16px">
+<span id="cb-role-label" style="font-family: 'Fraunces', serif; font-weight: 300; font-size: clamp(32px, 3.4vw, 48px); line-height: 1.15; letter-spacing: -0.02em; white-space: nowrap">I am {{article}}</span>
+<div onKeyDown="{{onListKey}}" style="position: relative; flex: 1 1 260px; min-width: 0; max-width: 440px; text-align: left">
+<button type="button" id="cb-role" ref="{{selectRef}}" onClick="{{toggleList}}" aria-haspopup="listbox" aria-expanded="{{openStr}}" aria-labelledby="cb-role-label cb-role" style="width: 100%; box-sizing: border-box; display: flex; align-items: center; justify-content: space-between; gap: 12px; font-family: 'Fraunces', serif; font-style: italic; font-weight: 300; font-size: clamp(32px, 3.4vw, 48px); line-height: 1.5; color: {{accent}}; background: transparent; border: none; border-bottom: 1px solid rgba(245,237,228,0.4); border-radius: 0; padding: 0 4px 6px 0; cursor: pointer; text-align: left">
+<span style="min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{roleText}}</span>
+<svg width="22" height="22" viewBox="0 0 28 28" fill="none" stroke="#F5EDE4" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: 0 0 auto; transition: transform 0.2s; transform: {{chevRot}}"><path d="M7 11L14 18L21 11"></path></svg>
+</button>
+<sc-if value="{{open}}" hint-placeholder-val="{{ false }}">
+<button type="button" aria-label="Close the list" tabindex="-1" onClick="{{closeList}}" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: transparent; border: none; cursor: default; z-index: 4"></button>
+<div style="position: absolute; left: 0; right: 0; top: calc(100% + 10px); z-index: 5; background: #361A13; border: 1px solid rgba(245,237,228,0.14); border-radius: 16px; box-shadow: 0 24px 60px rgba(0,0,0,0.45); overflow: hidden; font-family: 'Manrope', system-ui, sans-serif; font-style: normal">
+<div style="padding: 12px; border-bottom: 1px solid rgba(245,237,228,0.10)">
+<label for="cb-role-search" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap">Search roles</label>
+<input id="cb-role-search" ref="{{searchRef}}" type="text" value="{{q}}" onChange="{{onSearch}}" placeholder="Search roles…" autocomplete="off" style="width: 100%; box-sizing: border-box; font: inherit; font-size: 15px; color: #F5EDE4; background: rgba(245,237,228,0.06); border: 1px solid rgba(245,237,228,0.14); border-radius: 10px; padding: 10px 12px; min-height: 44px">
+</div>
+<div role="listbox" aria-label="Roles" class="cb-list" style="max-height: 300px; overflow-y: auto; padding: 6px">
+<sc-if value="{{noMatch}}" hint-placeholder-val="{{ false }}">
+<p style="margin: 0; padding: 12px 12px 4px; font-size: 14px; line-height: 1.5; color: #CBB6A6">No exact match. Pick Other and tell us in your own words.</p>
+</sc-if>
+<sc-for list="{{groups}}" as="grp" hint-placeholder-count="3">
+<div role="group" aria-label="{{grp.label}}">
+<div aria-hidden="true" style="font-size: 11px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: #A8907F; padding: 12px 12px 6px">{{grp.label}}</div>
+<sc-for list="{{grp.items}}" as="it" hint-placeholder-count="4">
+<button type="button" role="option" aria-selected="{{it.selStr}}" onClick="{{it.pick}}" class="cb-opt {{it.cls}}" style="display: block; width: 100%; box-sizing: border-box; text-align: left; font: inherit; font-size: 15px; color: #F5EDE4; border: none; border-radius: 8px; padding: 11px 12px; min-height: 44px; cursor: pointer">{{it.label}}</button>
+</sc-for>
+</div>
+</sc-for>
+</div>
+</div>
+</sc-if>
+</div>
+</div>
+<p style="margin: 0; font-size: 17px; line-height: 1.6; color: #DCCABD; max-width: 460px">Pick the closest fit. We'll shape everything that follows around it, and you can change it whenever you like.</p>
+<div style="display: flex; flex-direction: column; align-items: center; gap: 14px">
+<button type="button" disabled="{{noRole}}" onClick="{{next}}" style="font: inherit; font-size: 16px; font-weight: 600; cursor: pointer; border: none; border-radius: 999px; padding: 16px 32px; min-height: 52px; background: {{accent}}; color: #2A130E">Continue</button>
+</div>
+</div>
+</sc-if>
+<sc-if value="{{isStep2}}" hint-placeholder-val="{{ false }}">
+<div class="cb-step" style="width: 100%; max-width: 760px; min-width: 0; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 28px">
+<p style="margin: 0; font-size: 13px; letter-spacing: 0.18em; text-transform: uppercase; color: #CBB6A6">Give your wish a name</p>
+<div style="width: 100%; display: flex; flex-wrap: wrap; align-items: baseline; justify-content: center; gap: 6px 16px">
+<label for="cb-biz" style="font-family: 'Fraunces', serif; font-weight: 300; font-size: clamp(32px, 3.4vw, 48px); line-height: 1.15; letter-spacing: -0.02em; white-space: nowrap">My business is called</label>
+<input id="cb-biz" ref="{{bizRef}}" type="text" value="{{biz}}" onChange="{{onBiz}}" disabled="{{noName}}" placeholder="its name" autocomplete="organization" style="flex: 1 1 240px; min-width: 0; max-width: 380px; box-sizing: border-box; font-family: 'Fraunces', serif; font-style: italic; font-weight: 300; font-size: clamp(32px, 3.4vw, 48px); line-height: 1.5; color: {{accent}}; background: transparent; border: none; border-bottom: 1px solid rgba(245,237,228,0.4); border-radius: 0; padding: 0 0 6px; outline-offset: 6px">
+</div>
+<p style="margin: 0; font-size: 17px; line-height: 1.6; color: #DCCABD; max-width: 460px">Write it the way you'd want to see it on a sign.</p>
+<div style="display: flex; flex-direction: column; align-items: center; gap: 4px">
+<p style="margin: 0; font-family: 'Fraunces', serif; font-style: italic; font-weight: 400; font-size: 16px; line-height: 1.5; color: {{accent}}">Still deciding? That's exactly what we're here for.</p>
+<label style="display: inline-flex; align-items: center; gap: 12px; font-size: 15px; color: #F5EDE4; cursor: pointer; min-height: 44px">
+<input type="checkbox" checked="{{noName}}" onChange="{{toggleNoName}}" style="width: 20px; height: 20px; margin: 0; accent-color: {{accent}}; cursor: pointer">
+I don't have a name yet. Help me find one.
+</label>
+</div>
+<div style="display: flex; flex-direction: column; align-items: center; gap: 14px">
+<button type="button" disabled="{{bizNotReady}}" onClick="{{next2}}" style="font: inherit; font-size: 16px; font-weight: 600; cursor: pointer; border: none; border-radius: 999px; padding: 16px 32px; min-height: 52px; background: {{accent}}; color: #2A130E">Continue</button>
+</div>
+</div>
+</sc-if>
+<sc-if value="{{isStep3}}" hint-placeholder-val="{{ false }}">
+<div class="cb-step" style="width: 100%; max-width: 860px; min-width: 0; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 18px; margin-top: 28px">
+<p style="margin: 0; font-size: 13px; letter-spacing: 0.18em; text-transform: uppercase; color: #CBB6A6">Make your wish</p>
+<h2 id="cb-goals-label" style="margin: 0; font-family: 'Fraunces', serif; font-weight: 300; font-size: clamp(32px, 3.4vw, 48px); line-height: 1.15; letter-spacing: -0.02em">I'm wishing for<em style="font-style: italic; color: {{accent}}">…</em></h2>
+<div role="group" aria-labelledby="cb-goals-label" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; max-width: 860px">
+<sc-for list="{{goalItems}}" as="g" hint-placeholder-count="9">
+<button type="button" aria-pressed="{{g.pressed}}" onClick="{{g.toggle}}" class="cb-chip {{g.cls}}">
+<sc-if value="{{g.on}}" hint-placeholder-val="{{ false }}">
+<svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 7.5L5.5 10.5L11.5 3.5"></path></svg>
+</sc-if>
+{{g.label}}
+</button>
+</sc-for>
+</div>
+<sc-if value="{{otherOn}}" hint-placeholder-val="{{ false }}">
+<div style="width: 100%; max-width: 460px; display: flex; flex-direction: column; gap: 8px; text-align: left">
+<label for="cb-other" style="font-size: 14px; color: #CBB6A6">Tell us about it</label>
+<input id="cb-other" type="text" value="{{goalOther}}" onChange="{{onGoalOther}}" placeholder="A few words are plenty" style="font: inherit; font-size: 16px; color: #F5EDE4; background: rgba(245,237,228,0.06); border: 1px solid rgba(245,237,228,0.18); border-radius: 12px; padding: 12px 14px; min-height: 48px; box-sizing: border-box; width: 100%">
+</div>
+</sc-if>
+<p style="margin: 0; font-family: 'Fraunces', serif; font-style: italic; font-size: 16px; line-height: 1.5; color: {{accent}}">Choose as many as you like. Wishes are allowed to grow.</p>
+<div style="display: flex; flex-direction: column; align-items: center; gap: 14px">
+<button type="button" disabled="{{goalsNotReady}}" onClick="{{next3}}" style="font: inherit; font-size: 16px; font-weight: 600; cursor: pointer; border: none; border-radius: 999px; padding: 16px 32px; min-height: 52px; background: {{accent}}; color: #2A130E">Continue</button>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{isPackage}}" hint-placeholder-val="{{ false }}">
+<div class="cb-step" style="width: 100%; max-width: 760px; min-width: 0; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 18px; margin-top: 28px">
+<p style="margin: 0; font-size: 13px; letter-spacing: 0.18em; text-transform: uppercase; color: #CBB6A6">Your wish, gathered up</p>
+<h2 style="margin: 0; font-family: 'Fraunces', serif; font-weight: 300; font-size: clamp(30px, 3vw, 42px); line-height: 1.15; letter-spacing: -0.02em">Here's your package{{forName}}<em style="font-style: italic; color: {{accent}}">.</em></h2>
+<div style="width: 100%; max-width: 640px; box-sizing: border-box; text-align: left; background: #361A13; border: 1px solid rgba(245,237,228,0.12); border-radius: 20px; padding: 18px 26px 20px">
+<ul style="list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); column-gap: 28px">
+<sc-for list="{{pkgItems}}" as="p" hint-placeholder-count="3">
+<li style="display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 10px 0; border-bottom: 1px solid rgba(245,237,228,0.08); font-size: 15px; color: #F5EDE4"><span>{{p.label}}</span><span style="font-family: 'Fraunces', serif; font-size: 17px; white-space: nowrap">{{p.price}}</span></li>
+</sc-for>
+</ul>
+<sc-if value="{{hasDiscount}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 12px 0 0; font-family: 'Fraunces', serif; font-style: italic; font-size: 16px; color: {{accent}}"><span>Bundle saving, 10% for three or more</span><span style="white-space: nowrap">−{{discount}}</span></div>
+</sc-if>
+<div style="display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding-top: 12px; margin-top: 12px; border-top: 1px solid rgba(245,237,228,0.2)"><span style="font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; color: #CBB6A6">Starting from</span><span style="font-family: 'Fraunces', serif; font-weight: 300; font-size: 34px; line-height: 1.1; color: {{accent}}">{{total}}</span></div>
+<p style="margin: 6px 0 0; font-size: 13px; line-height: 1.5; color: #A8907F">Final pricing is confirmed after a short kickoff call. Taxes not included.</p>
+</div>
+<div style="display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 10px 20px">
+<button type="button" onClick="{{plantWish}}" style="font: inherit; font-size: 16px; font-weight: 600; cursor: pointer; border: none; border-radius: 999px; padding: 16px 32px; min-height: 52px; background: {{accent}}; color: #2A130E">Plant this wish</button>
+<button type="button" onClick="{{talkFirst}}" style="font: inherit; font-size: 15px; color: #F5EDE4; background: none; border: none; text-decoration: underline; text-underline-offset: 4px; cursor: pointer; min-height: 44px; padding: 0 6px">I'd rather talk it through first</button>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{isPlanted}}" hint-placeholder-val="{{ false }}">
+<div class="cb-step" style="width: 100%; max-width: 640px; min-width: 0; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 18px; margin-top: 28px">
+<p style="margin: 0; font-size: 13px; letter-spacing: 0.18em; text-transform: uppercase; color: #CBB6A6">Wish received</p>
+<h2 style="margin: 0; font-family: 'Fraunces', serif; font-weight: 300; font-size: clamp(32px, 3.4vw, 48px); line-height: 1.15; letter-spacing: -0.02em">Your wish is planted<em style="font-style: italic; color: {{accent}}">.</em></h2>
+<p style="margin: 0; font-size: 17px; line-height: 1.6; color: #DCCABD; max-width: 480px">We'll be in touch within [RESPONSE TIME] with a kickoff date and everything you need to get growing.</p>
+</div>
+</sc-if>
+
+<sc-if value="{{isCall}}" hint-placeholder-val="{{ false }}">
+<div class="cb-step" style="width: 100%; max-width: 760px; min-width: 0; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 16px; margin-top: 28px">
+<p style="margin: 0; font-size: 13px; letter-spacing: 0.18em; text-transform: uppercase; color: #CBB6A6">Let's talk it through</p>
+<h2 style="margin: 0; font-family: 'Fraunces', serif; font-weight: 300; font-size: clamp(30px, 3vw, 42px); line-height: 1.15; letter-spacing: -0.02em">Your wish deserves a conversation<em style="font-style: italic; color: {{accent}}">.</em></h2>
+<p style="margin: 0; font-size: 16px; line-height: 1.6; color: #DCCABD; max-width: 520px">Some wishes are best shaped together. Book a free 30-minute discovery call and we'll build a package around exactly what you need.</p>
+<sc-if value="{{hasOtherText}}" hint-placeholder-val="{{ false }}">
+<p style="margin: 0; font-family: 'Fraunces', serif; font-style: italic; font-size: 17px; line-height: 1.5; color: {{accent}}; max-width: 520px">“{{goalOther}}”</p>
+</sc-if>
+<div role="group" aria-label="Choose a day" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 4px">
+<sc-for list="{{dayItems}}" as="d" hint-placeholder-count="5">
+<button type="button" aria-pressed="{{d.pressed}}" onClick="{{d.pick}}" class="cb-chip {{d.cls}}">{{d.label}}</button>
+</sc-for>
+</div>
+<div role="group" aria-label="Choose a time" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 8px">
+<sc-for list="{{timeItems}}" as="tm" hint-placeholder-count="4">
+<button type="button" aria-pressed="{{tm.pressed}}" onClick="{{tm.pick}}" class="cb-chip {{tm.cls}}">{{tm.label}}</button>
+</sc-for>
+</div>
+<p style="margin: 0; font-size: 13px; color: #A8907F">Times are shown in your time zone.</p>
+<div style="display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 10px 20px">
+<button type="button" disabled="{{cantBook}}" onClick="{{bookCall}}" style="font: inherit; font-size: 16px; font-weight: 600; cursor: pointer; border: none; border-radius: 999px; padding: 16px 32px; min-height: 52px; background: {{accent}}; color: #2A130E">Book my call</button>
+<sc-if value="{{canSeePackage}}" hint-placeholder-val="{{ false }}">
+<button type="button" onClick="{{backToPackage}}" style="font: inherit; font-size: 15px; color: #F5EDE4; background: none; border: none; text-decoration: underline; text-underline-offset: 4px; cursor: pointer; min-height: 44px; padding: 0 6px">Back to my package</button>
+</sc-if>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{isBooked}}" hint-placeholder-val="{{ false }}">
+<div class="cb-step" style="width: 100%; max-width: 640px; min-width: 0; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 18px; margin-top: 28px">
+<p style="margin: 0; font-size: 13px; letter-spacing: 0.18em; text-transform: uppercase; color: #CBB6A6">See you soon</p>
+<h2 style="margin: 0; font-family: 'Fraunces', serif; font-weight: 300; font-size: clamp(30px, 3vw, 42px); line-height: 1.2; letter-spacing: -0.02em">You're booked for <em style="font-style: italic; color: {{accent}}">{{bookedWhen}}</em>.</h2>
+<p style="margin: 0; font-size: 17px; line-height: 1.6; color: #DCCABD; max-width: 480px">A calendar invite is on its way. Bring your wish, and any half-formed ideas. Those are often the best ones.</p>
+</div>
+</sc-if>
+<div style="display: flex; flex-direction: column; align-items: center; gap: 10px; margin-top: 36px; font-size: 14px; color: #CBB6A6">
+<span>Step {{stepNum}} of 4</span>
+<div role="progressbar" aria-label="Onboarding progress" aria-valuemin="1" aria-valuemax="4" aria-valuenow="{{stepNum}}" style="width: 240px; height: 3px; border-radius: 3px; background: rgba(245,237,228,0.16); overflow: hidden">
+<div style="width: {{progW}}; height: 100%; background: {{accent}}; transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1)"></div>
 </div>
 </div>
 </div>
 </section>
+</div>
 
 </div>
+</div>
+</template>
 <script>
-// Minimal stand-in for the design canvas runtime, so the component class runs as-is.
-class DCLogic {
-  constructor() { this.props = {}; this.state = {}; }
-  setState(patch) {
-    Object.assign(this.state, typeof patch === 'function' ? patch(this.state) : patch);
-    if (this._render) this._render();
+// ---- Minimal runtime: renders the <template> with the component's values ----
+// Supports {{path}} holes, <sc-if value>, <sc-for list as>, on* events and ref.
+(function () {
+  var ACCENT = "#E8B15A";
+
+  function DCLogic() {}
+  DCLogic.prototype.setState = function (patch) {
+    this.state = this.state || {};
+    var p = typeof patch === 'function' ? patch(this.state) : patch;
+    for (var k in p) this.state[k] = p[k];
+    if (this._schedule) this._schedule();
+  };
+  window.DCLogic = DCLogic;
+
+  function lookup(path, scope) {
+    path = path.trim();
+    if (path === 'true') return true;
+    if (path === 'false') return false;
+    if (/^-?\d+(\.\d+)?$/.test(path)) return Number(path);
+    var parts = path.split('.'), v = scope;
+    for (var i = 0; i < parts.length; i++) { if (v == null) return undefined; v = v[parts[i]]; }
+    return v;
   }
-}
+  var HOLE = /\{\{([^}]+)\}\}/g;
+  var WHOLE = /^\{\{([^}]+)\}\}$/;
+  function interp(str, scope) {
+    return str.replace(HOLE, function (_, p) { var v = lookup(p, scope); return v == null ? '' : String(v); });
+  }
+
+  // template -> lightweight virtual nodes
+  function build(nodes, scope, out) {
+    for (var i = 0; i < nodes.length; i++) {
+      var n = nodes[i];
+      if (n.nodeType === 3) { out.push({ text: interp(n.data, scope) }); continue; }
+      if (n.nodeType !== 1) continue;
+      var tag = n.localName;
+      if (tag === 'sc-if') { if (lookup(n.getAttribute('value').replace(/[{}]/g, ''), scope)) build(n.childNodes, scope, out); continue; }
+      if (tag === 'sc-for') {
+        var list = lookup(n.getAttribute('list').replace(/[{}]/g, ''), scope) || [];
+        var as = n.getAttribute('as') || 'item';
+        for (var j = 0; j < list.length; j++) {
+          var sc = Object.create(scope); sc[as] = list[j]; sc.$index = j;
+          build(n.childNodes, sc, out);
+        }
+        continue;
+      }
+      var v = { tag: tag, ns: n.namespaceURI, attrs: {}, props: {}, events: {}, ref: null, children: [] };
+      for (var a = 0; a < n.attributes.length; a++) {
+        var name = n.attributes[a].name, val = n.attributes[a].value;
+        if (name.indexOf('hint-') === 0) continue;
+        var m = val.match(WHOLE), raw = m ? lookup(m[1], scope) : interp(val, scope);
+        if (name.indexOf('on') === 0 && name.length > 2) { v.events[name.slice(2)] = raw; continue; }
+        if (name === 'ref') { v.ref = raw; continue; }
+        if (name === 'value' || name === 'checked') { v.props[name] = raw; continue; }
+        if (name === 'disabled') { if (raw === true || raw === '' || raw === 'true') v.attrs.disabled = ''; continue; }
+        if (raw === false || raw == null) continue;
+        v.attrs[name] = String(raw);
+      }
+      build((n.content || n).childNodes, scope, v.children);
+      out.push(v);
+    }
+    return out;
+  }
+
+  function eventName(el, ev) {
+    if (ev === 'change' && el.localName === 'input' && el.type !== 'checkbox' && el.type !== 'radio') return 'input';
+    return ev;
+  }
+  function create(v) {
+    if (v.text != null) return document.createTextNode(v.text);
+    return v.ns && v.ns !== 'http://www.w3.org/1999/xhtml' ? document.createElementNS(v.ns, v.tag) : document.createElement(v.tag);
+  }
+  function update(el, v, fresh) {
+    var old = el.__attrs || {};
+    for (var k in old) if (!(k in v.attrs)) el.removeAttribute(k);
+    for (var k2 in v.attrs) if (old[k2] !== v.attrs[k2]) el.setAttribute(k2, v.attrs[k2]);
+    el.__attrs = v.attrs;
+    if ('value' in v.props) { var nv = v.props.value == null ? '' : String(v.props.value); if (el.value !== nv) el.value = nv; }
+    if ('checked' in v.props) el.checked = !!v.props.checked;
+    el.__h = el.__h || {};
+    for (var ev in v.events) {
+      var real = eventName(el, ev);
+      if (!(real in el.__h)) (function (r) { el.addEventListener(r, function (e) { var f = el.__h[r]; if (typeof f === 'function') f(e); }); })(real);
+      el.__h[real] = v.events[ev];
+    }
+    patch(el, v.children);
+    if (fresh && typeof v.ref === 'function') v.ref(el);
+  }
+  function patch(parent, vnodes) {
+    for (var i = 0; i < vnodes.length; i++) {
+      var v = vnodes[i], cur = parent.childNodes[i];
+      if (v.text != null) {
+        if (cur && cur.nodeType === 3) { if (cur.data !== v.text) cur.data = v.text; }
+        else { var t = create(v); cur ? parent.replaceChild(t, cur) : parent.appendChild(t); }
+        continue;
+      }
+      if (cur && cur.nodeType === 1 && cur.localName === v.tag && cur.namespaceURI === (v.ns || cur.namespaceURI)) { update(cur, v, false); continue; }
+      var el = create(v);
+      cur ? parent.replaceChild(el, cur) : parent.appendChild(el);
+      update(el, v, true);
+    }
+    while (parent.childNodes.length > vnodes.length) parent.removeChild(parent.lastChild);
+  }
+
+  window.__dcMount = function (Component) {
+    var root = document.getElementById('app'), tpl = document.getElementById('tpl');
+    var c = new Component();
+    c.props = { accent: ACCENT };
+    c.state = c.state || {};
+    var queued = false;
+    function render() { queued = false; patch(root, build(tpl.content.childNodes, c.renderVals(), [])); }
+    c._schedule = function () { if (!queued) { queued = true; Promise.resolve().then(render); } };
+    render();
+  };
+})();
 
 class Component extends DCLogic {
   renderVals() {
@@ -78,10 +390,58 @@ class Component extends DCLogic {
         if (el && el !== self.cv) { self._teardown(); self._setup(el); }
         else if (!el) { self._teardown(); self.cv = null; }
       };
-      this._wish = function () {
-        self._blow();
-        var n = ((self.state && self.state.wishes) || 0) + 1;
-        self.setState({ wishes: n });
+      this._heroRef = function (el) { self.heroEl = el; if (el && self.cv) self._resize(); };
+      this._spotRef = function (el) { self.spot = el; };
+      this._selRef = function (el) { self.sel = el; };
+      this._wish = function () { self._makeWish(); };
+      this._back = function () {
+        var st = (self.state && self.state.step) || 1;
+        if (st > 1) { self.setState({ step: st - 1, cont3: false, talk: false, planted: false, booked: false }); return; }
+        self._goBack();
+      };
+      this._bizRef = function (el) { self.bizEl = el; };
+      this._onBiz = function (e) { self.setState({ biz: e.target.value, cont2: false }); };
+      this._toggleNoName = function (e) { self.setState({ noName: e.target.checked, cont2: false }); };
+      this._next2 = function () {
+        var st = self.state || {}, goals = (st.goals || []).slice();
+        if (st.noName && goals.indexOf('name') === -1) goals.push('name');
+        self.setState({ step: 3, goals: goals });
+      };
+      this._toggleGoal = function (id) {
+        var goals = ((self.state && self.state.goals) || []).slice(), i = goals.indexOf(id);
+        if (i === -1) goals.push(id); else goals.splice(i, 1);
+        self.setState({ goals: goals, cont3: false });
+      };
+      this._onGoalOther = function (e) { self.setState({ goalOther: e.target.value }); };
+      this._next3 = function () { self.setState({ step: 4, talk: false, planted: false, booked: false }); };
+      this._plantWish = function () { self.setState({ planted: true }); };
+      this._talkFirst = function () { self.setState({ talk: true }); };
+      this._backToPackage = function () { self.setState({ talk: false }); };
+      this._bookCall = function () { self.setState({ booked: true }); };
+      this._pickDay = function (d) { self.setState({ callDay: d }); };
+      this._pickTime = function (t) { self.setState({ callTime: t }); };
+      this._pickRole = function (e) { self.setState({ role: e.target.value, cont: false }); };
+      this._next = function () {
+        self.setState({ step: 2 });
+        setTimeout(function () { if (self.bizEl && !(self.state && self.state.noName)) { try { self.bizEl.focus({ preventScroll: true }); } catch (e) {} } }, 80);
+      };
+      this._searchRef = function (el) { self.searchEl = el; };
+      this._toggleList = function () {
+        var open = !(self.state && self.state.open);
+        self.setState({ open: open, q: '' });
+        if (open) setTimeout(function () { if (self.searchEl) { try { self.searchEl.focus({ preventScroll: true }); } catch (e) {} } }, 40);
+      };
+      this._closeList = function () { self.setState({ open: false }); };
+      this._onSearch = function (e) { self.setState({ q: e.target.value }); };
+      this._onListKey = function (e) {
+        if (e.key === 'Escape' && self.state && self.state.open) {
+          self.setState({ open: false });
+          if (self.sel) { try { self.sel.focus({ preventScroll: true }); } catch (err) {} }
+        }
+      };
+      this._choose = function (title) {
+        self.setState({ role: title, open: false, q: '', cont: false });
+        if (self.sel) { try { self.sel.focus({ preventScroll: true }); } catch (err) {} }
       };
       this._move = function (e) {
         var x = e.clientX;
@@ -91,23 +451,162 @@ class Component extends DCLogic {
         }
         self._mx = x;
       };
-      this._send = function () { self.setState({ sent: true }); };
     }
-    var w = (s.wishes || 0) > 0;
+    var w = (s.wishes || 0) > 0, slid = !!s.slid, role = s.role || '';
+    var pk = this._package(s);
+    var q = (s.q || '').trim().toLowerCase();
+    var groups = [];
+    this._roles().forEach(function (g) {
+      var items = g[1].filter(function (title) { return g[0] === 'Something else' || !q || title.toLowerCase().indexOf(q) !== -1 || g[0].toLowerCase().indexOf(q) !== -1; })
+        .map(function (title) {
+          return { label: title, pick: function () { self._choose(title); }, selStr: title === role ? 'true' : 'false', cls: title === role ? 'cb-opt-sel' : '' };
+        });
+      if (items.length) groups.push({ label: g[0], items: items });
+    });
     return {
       accent: this.props.accent ?? '#E8B15A',
       canvasRef: this._ref,
+      heroRef: this._heroRef,
+      spotRef: this._spotRef,
+      selectRef: this._selRef,
       makeWish: this._wish,
+      goBack: this._back,
+      pickRole: this._pickRole,
+      next: this._next,
       onMove: this._move,
-      sendWish: this._send,
       wished: w,
       notWished: !w,
-      sent: !!s.sent,
-      notSent: !s.sent
+      trackX: slid ? '-50%' : '0%',
+      heroVis: s.heroGone ? 'hidden' : 'visible',
+      onbVis: s.onbOn ? 'visible' : 'hidden',
+      heroAria: slid ? 'true' : 'false',
+      onbAria: slid ? 'false' : 'true',
+      role: role,
+      article: /^[aeiou]/i.test(role) ? 'an' : 'a',
+      noRole: !role,
+      cont: !!s.cont && !!role,
+      open: !!s.open,
+      openStr: s.open ? 'true' : 'false',
+      chevRot: s.open ? 'rotate(180deg)' : 'rotate(0deg)',
+      roleText: role || 'choose what you do',
+      toggleList: this._toggleList,
+      closeList: this._closeList,
+      onSearch: this._onSearch,
+      onListKey: this._onListKey,
+      searchRef: this._searchRef,
+      q: s.q || '',
+      groups: groups,
+      noMatch: !!q && groups.length === 1,
+      isStep1: (s.step || 1) === 1,
+      isStep2: s.step === 2,
+      isStep3: s.step === 3,
+      isPackage: pk.step4 && !pk.needCall && !s.planted,
+      isPlanted: pk.step4 && !pk.needCall && !!s.planted,
+      isCall: pk.step4 && pk.needCall && !s.booked,
+      isBooked: pk.step4 && pk.needCall && !!s.booked,
+      forName: (s.biz || '').trim() && !s.noName ? ', ' + s.biz.trim() : '',
+      pkgItems: pk.items,
+      hasDiscount: pk.discount > 0,
+      discount: pk.fmt(pk.discount),
+      total: pk.fmt(pk.total),
+      plantWish: this._plantWish,
+      talkFirst: this._talkFirst,
+      backToPackage: this._backToPackage,
+      canSeePackage: !pk.hasOther,
+      hasOtherText: pk.hasOther && !!(s.goalOther || '').trim(),
+      dayItems: pk.days.map(function (d) { var on = s.callDay === d; return { label: d, pressed: on ? 'true' : 'false', cls: on ? 'cb-chip-on' : '', pick: function () { self._pickDay(d); } }; }),
+      timeItems: ['09:30', '11:00', '14:30', '16:00'].map(function (t) { var on = s.callTime === t; return { label: t, pressed: on ? 'true' : 'false', cls: on ? 'cb-chip-on' : '', pick: function () { self._pickTime(t); } }; }),
+      cantBook: !(s.callDay && s.callTime),
+      bookCall: this._bookCall,
+      bookedWhen: (s.callDay || '') + ' at ' + (s.callTime || ''),
+      goalItems: [
+        ['name', 'A name people remember'],
+        ['identity', 'A logo & visual identity'],
+        ['website', 'A website that brings in customers'],
+        ['shop', 'An online shop'],
+        ['bookings', 'Online bookings'],
+        ['rebrand', 'A fresh new look'],
+        ['social', 'Social media that looks the part'],
+        ['print', 'Print & packaging'],
+        ['other', 'Something else']
+      ].map(function (g) {
+        var on = (s.goals || []).indexOf(g[0]) !== -1;
+        return { label: g[1], on: on, pressed: on ? 'true' : 'false', cls: on ? 'cb-chip-on' : '', toggle: function () { self._toggleGoal(g[0]); } };
+      }),
+      otherOn: (s.goals || []).indexOf('other') !== -1,
+      goalOther: s.goalOther || '',
+      onGoalOther: this._onGoalOther,
+      goalsNotReady: !(s.goals || []).length,
+      next3: this._next3,
+      cont3: !!s.cont3,
+      stepNum: s.step || 1,
+      progW: (s.step || 1) * 25 + '%',
+      bizRef: this._bizRef,
+      biz: s.biz || '',
+      onBiz: this._onBiz,
+      noName: !!s.noName,
+      toggleNoName: this._toggleNoName,
+      bizNotReady: !s.noName && !(s.biz || '').trim(),
+      next2: this._next2,
+      cont2: !!s.cont2,
+      cont2Text: s.noName ? 'Wonderful. Naming is one of our favourite things. Next, what are you wishing for?' : 'Beautiful. Next, what are you wishing for?'
     };
   }
 
-  componentWillUnmount() { this._teardown(); this.cv = null; }
+  // Starting prices for each wish, in US dollars. Edit here to change the package.
+  _prices() {
+    return {
+      name: ['Naming', 1500],
+      identity: ['Logo & visual identity', 3500],
+      website: ['Website design & build', 7000],
+      shop: ['Online shop', 5000],
+      bookings: ['Online bookings', 3500],
+      rebrand: ['Brand refresh', 3500],
+      social: ['Social media kit', 1000],
+      print: ['Print & packaging design', 3500]
+    };
+  }
+
+  _package(s) {
+    var prices = this._prices(), goals = s.goals || [];
+    var fmt = function (n) { return '$' + Math.round(n).toLocaleString('en-US'); };
+    var order = ['name', 'identity', 'website', 'shop', 'bookings', 'rebrand', 'social', 'print'];
+    var items = [], sub = 0;
+    order.forEach(function (id) {
+      if (goals.indexOf(id) !== -1) { items.push({ label: prices[id][0], price: fmt(prices[id][1]) }); sub += prices[id][1]; }
+    });
+    var discount = items.length >= 3 ? Math.round(sub * 0.1 / 50) * 50 : 0;
+    var hasOther = goals.indexOf('other') !== -1;
+    var days = [], d = new Date();
+    while (days.length < 5) {
+      d.setDate(d.getDate() + 1);
+      if (d.getDay() !== 0 && d.getDay() !== 6) days.push(d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }));
+    }
+    return { step4: s.step === 4, items: items, discount: discount, total: sub - discount, fmt: fmt, hasOther: hasOther, needCall: hasOther || !!s.talk, days: days };
+  }
+
+  _roles() {
+    return [
+      ['Food & hospitality', ['Restaurant owner', 'Café owner', 'Baker', 'Chef', 'Caterer', 'Hotelier', 'B&B host', 'Winemaker', 'Brewer']],
+      ['Retail & e-commerce', ['Shop owner', 'Online store owner', 'Boutique owner', 'Florist', 'Jewellery designer', 'Fashion designer']],
+      ['Health & wellness', ['Therapist', 'Physiotherapist', 'Dentist', 'Doctor in private practice', 'Midwife', 'Nutritionist', 'Yoga teacher', 'Personal trainer']],
+      ['Beauty', ['Hair stylist', 'Makeup artist', 'Nail technician', 'Esthetician', 'Spa owner']],
+      ['Creative', ['Photographer', 'Illustrator', 'Artist', 'Graphic designer', 'Musician', 'Writer', 'Filmmaker']],
+      ['Professional services', ['Lawyer', 'Accountant', 'Consultant', 'Architect', 'Financial advisor', 'Real estate agent', 'Translator']],
+      ['Trades & home', ['Electrician', 'Plumber', 'Builder', 'Carpenter', 'Interior designer', 'Landscaper', 'Cleaning business owner']],
+      ['Education & coaching', ['Tutor', 'Coach', 'Course creator', 'Language teacher', 'Childcare provider']],
+      ['Tech & startups', ['Startup founder', 'Software developer', 'IT consultant', 'App maker']],
+      ['Land & makers', ['Farmer', 'Artisan', 'Ceramicist', 'Woodworker', 'Beekeeper']],
+      ['Community & events', ['Nonprofit director', 'Community organiser', 'Event planner', 'Wedding planner']],
+      ['Something else', ['Other — I\'ll describe it']]
+    ];
+  }
+
+  componentWillUnmount() {
+    this._teardown();
+    this.cv = null;
+    (this._timers || []).forEach(function (id) { clearTimeout(id); });
+  }
 
   _teardown() {
     if (this.raf) cancelAnimationFrame(this.raf);
@@ -116,17 +615,25 @@ class Component extends DCLogic {
     this.ro = null;
   }
 
+  _later(fn, ms) {
+    if (!this._timers) this._timers = [];
+    this._timers.push(setTimeout(fn, ms));
+  }
+
   _setup(el) {
     var self = this;
     this.cv = el;
     this.ctx = el.getContext('2d');
     this.reduced = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    this.DUR = this.reduced ? 1 : 1600;
     this.t0 = performance.now();
     this.last = this.t0;
     this.free = [];
     this.pending = [];
     this.gust = this.gust || 0;
     this.nextAmbient = 5200;
+    this.slideTo = null;
+    this.wished = false;
     if (!this.seeds) this._build();
     this._resize();
     if (window.ResizeObserver) {
@@ -178,8 +685,402 @@ class Component extends DCLogic {
     el.width = Math.round(W * dpr);
     el.height = Math.round(H * dpr);
     this.W = W; this.H = H; this.dpr = dpr;
-    if (W < 860) { this.cx = W * 0.5; this.cy = H * 0.74; this.R = Math.min(W * 0.34, 190); }
-    else { this.cx = W * 0.72; this.cy = H * 0.44; this.R = Math.min(H * 0.3, W * 0.19, 290); }
+    var hT = 0, hH = H;
+    if (this.heroEl) { hT = this.heroEl.offsetTop; hH = this.heroEl.offsetHeight || H; }
+    this.heroBottom = hT + hH;
+    if (W < 860) { this.cx = W * 0.5; this.cy = hT + hH * 0.74; this.R = Math.min(W * 0.34, 190); }
+    else { this.cx = W * 0.72; this.cy = hT + hH * 0.44; this.R = Math.min(hH * 0.3, W * 0.19, 290); }
+  }
+
+  // how far the screens have slid: 0 = hero, 1 = onboarding (same easing as the CSS slide)
+  _sp(t) {
+    if (this.slideTo == null) return 0;
+    var u = Math.max(0, Math.min(1, (t - this.slideT0) / this.DUR));
+    var e = u < 0.5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2;
+    return this.slideFrom + (this.slideTo - this.slideFrom) * e;
+  }
+
+  _slide(to, t) {
+    this.slideFrom = this._sp(t);
+    this.slideTo = to;
+    this.slideT0 = t;
+  }
+
+  // where the lone seed settles once onboarding has slid into view
+  _measureLanding() {
+    var cv = this.cv, sp = this.spot, R = this.R;
+    if (!cv || !sp) return [this.W * 0.75, this.H * 0.55];
+    var cr = cv.getBoundingClientRect(), r = sp.getBoundingClientRect();
+    var k = cr.width ? cv.clientWidth / cr.width : 1;
+    var x = (r.left - cr.left) * k - this.W;
+    var y = (r.top - cr.top) * k;
+    return [x, y + R * 0.2];
+  }
+
+  _makeWish() {
+    if (this._busy || !this.cv) return;
+    this._busy = true;
+    var self = this, t = performance.now() - this.t0;
+    this.landing = this._measureLanding();
+    this._burst(t);
+    this.setState({ wishes: ((this.state && this.state.wishes) || 0) + 1 });
+    var delay = this.reduced ? 0 : 1300;
+    this._later(function () {
+      self._slide(1, performance.now() - self.t0);
+      self.setState({ slid: true, onbOn: true });
+    }, delay);
+    this._later(function () {
+      self.setState({ heroGone: true });
+      self._busy = false;
+      if (self.sel) { try { self.sel.focus({ preventScroll: true }); } catch (e) {} }
+    }, delay + this.DUR + 60);
+  }
+
+  _goBack() {
+    if (this._busy) return;
+    this._busy = true;
+    var self = this;
+    this.setState({ heroGone: false });
+    this._later(function () {
+      var t = performance.now() - self.t0;
+      self._slide(0, t);
+      self._regrow(t + 500);
+      self.setState({ slid: false });
+    }, 30);
+    this._later(function () {
+      self.setState({ onbOn: false });
+      self._busy = false;
+    }, this.DUR + 120);
+  }
+
+  _regrow(at) {
+    var S = this.seeds;
+    for (var i = 0; i < S.length; i++) { S[i].gone = false; S[i].pend = false; S[i].born = at; }
+    this.wished = false;
+    this.pending = [];
+    this.nextAmbient = at + 6000;
+    for (var j = 0; j < this.free.length; j++) {
+      var f = this.free[j];
+      if (f.guide) { f.guide = false; f.life = f.age + 1.6; }
+    }
+  }
+
+  // every seed bursts outward; one is held back to guide the way
+  _burst(t) {
+    this.wished = true;
+    this.pending = [];
+    var S = this.seeds, rot = this.rot, best = -1e9, gi = -1;
+    for (var i = 0; i < S.length; i++) {
+      var s = S[i];
+      if (s.gone) continue;
+      s.pend = true;
+      var sc = rot[i * 12] * 0.5 + rot[i * 12 + 1] * 0.6 + rot[i * 12 + 2] * 0.4;
+      if (sc > best) { best = sc; gi = i; }
+    }
+    for (var j = 0; j < S.length; j++) {
+      if (j === gi || !S[j].pend) continue;
+      this.pending.push({ i: j, at: t + Math.random() * 240, kind: 'burst' });
+    }
+    if (gi >= 0) this.pending.push({ i: gi, at: t + 520, kind: 'guide' });
+    this.gust = Math.min(1.6, (this.gust || 0) + 1.2);
+  }
+
+  _detach(i, t, hx, hy, kind) {
+    var s = this.seeds[i];
+    s.pend = false;
+    if (s.gone) return;
+    var o = i * 12, rot = this.rot, R = this.R;
+    s.gone = true;
+    s.regrow = this.wished ? Infinity : t + 9000 + Math.random() * 6000;
+    if (kind !== 'burst' && kind !== 'guide' && this.free.length > 420) return;
+    var d = [rot[o], rot[o + 1], rot[o + 2]];
+    var f = {
+      x: hx + d[0] * 0.1 * R, y: hy - d[1] * 0.1 * R,
+      vx: d[0] * 70 + 25, vy: -d[1] * 70 - 10,
+      d: d, fil: s.fil, len: s.len, open: s.open, sc: 1,
+      ph: Math.random() * 6.28, age: 0, tilt: (Math.random() - 0.5) * 0.7, spin: (Math.random() - 0.5) * 0.8
+    };
+    if (kind === 'burst') {
+      var sp = 260 + Math.random() * 480;
+      f.vx = d[0] * sp + (Math.random() - 0.5) * 90;
+      f.vy = -d[1] * sp + (Math.random() - 0.5) * 90;
+      f.burst = true;
+      f.life = 1.1 + Math.random() * 1.8;
+    }
+    if (kind === 'guide') {
+      f.guide = true;
+      f.g0 = t;
+      f.g1 = t + (this.reduced ? 1 : 780 + this.DUR + 300);
+      f.p0 = [f.x, f.y];
+      f.spin = 0.25;
+    }
+    this.free.push(f);
+  }
+
+  _frame(now) {
+    var ctx = this.ctx, W = this.W, H = this.H, R = this.R;
+    if (!ctx || !W) return;
+    var t = now - this.t0, dt = Math.min(0.05, Math.max(0.001, (now - this.last) / 1000));
+    this.last = now;
+    var red = this.reduced;
+    ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+    ctx.clearRect(0, 0, W, H);
+
+    this.gust *= Math.pow(0.3, dt);
+    var g = this.gust;
+    var sway = red ? 0 : (Math.sin(t / 1900) * 0.03 + Math.sin(t / 830 + 1) * 0.01 + g * 0.05);
+    var p = red ? 1 : Math.min(1, t / 4200);
+    var ay = red ? 0.5 : 0.5 + t * 0.00005, ax = -0.22;
+    var cya = Math.cos(ay), sya = Math.sin(ay), cxa = Math.cos(ax), sxa = Math.sin(ax), cs = Math.cos(sway), ss = Math.sin(sway);
+
+    // the dandelion travels with the hero as the screens slide
+    var ox = -W * this._sp(t);
+    var bx = this.cx + ox, by = (this.heroBottom || H) + 40, Ls = by - this.cy;
+    var hx = bx + Math.sin(sway) * Ls, hy = by - Math.cos(sway) * Ls;
+    var S = this.seeds, N = this.N, rot = this.rot, bk = this.bk;
+
+    if (bx > -R * 2) {
+      // soft light behind the head
+      var gr = ctx.createRadialGradient(hx, hy, R * 0.1, hx, hy, R * 1.6);
+      gr.addColorStop(0, 'rgba(255,236,220,0.07)');
+      gr.addColorStop(1, 'rgba(255,236,220,0)');
+      ctx.fillStyle = gr;
+      ctx.fillRect(hx - R * 1.6, hy - R * 1.6, R * 3.2, R * 3.2);
+
+      // stem
+      var grow = red ? 1 : Math.min(1, t / 900);
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(bx, by);
+      ctx.quadraticCurveTo(bx + Math.sin(sway) * Ls * 0.35 - R * 0.06, by - Ls * 0.55, hx, hy);
+      ctx.strokeStyle = 'rgba(143,163,117,' + (0.9 * grow) + ')';
+      ctx.lineWidth = Math.max(3, R * 0.028);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(bx - 1, by);
+      ctx.quadraticCurveTo(bx + Math.sin(sway) * Ls * 0.35 - R * 0.06 - 1, by - Ls * 0.55, hx - 1, hy);
+      ctx.strokeStyle = 'rgba(210,225,180,' + (0.25 * grow) + ')';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      var R3 = function (x, y, z, o) {
+        var x1 = x * cya + z * sya, z1 = -x * sya + z * cya;
+        var y1 = y * cxa - z1 * sxa, z2 = y * sxa + z1 * cxa;
+        rot[o] = x1 * cs + y1 * ss;
+        rot[o + 1] = -x1 * ss + y1 * cs;
+        rot[o + 2] = z2;
+      };
+      for (var i = 0; i < N; i++) {
+        var s = S[i];
+        if (s.gone) { bk[i] = 255; continue; }
+        var o = i * 12;
+        R3(s.d[0], s.d[1], s.d[2], o);
+        R3(s.u[0], s.u[1], s.u[2], o + 3);
+        R3(s.v[0], s.v[1], s.v[2], o + 6);
+        R3(s.a[0], s.a[1], s.a[2], o + 9);
+        var z = rot[o + 2];
+        var lit = rot[o] * -0.45 + rot[o + 1] * 0.55 + z * 0.7;
+        bk[i] = (z < -0.45 ? 0 : z < 0 ? 1 : z < 0.45 ? 2 : 3) * 2 + (lit > 0.25 ? 1 : 0);
+      }
+
+      var r0 = 0.1;
+      var eOf = function (s) {
+        var e = Math.max(0, Math.min(1, (p - s.delay) / 0.6));
+        e = 1 - Math.pow(1 - e, 3);
+        var rg = Math.max(0, Math.min(1, (t - s.born) / 2600));
+        rg = 1 - Math.pow(1 - rg, 3);
+        return Math.min(e, rg);
+      };
+      var seedPath = function (i, e, mode) {
+        var s = S[i], o = i * 12;
+        var dx = rot[o], dy = rot[o + 1];
+        var bl = r0 + 0.56 * s.len * e;
+        var tx = hx + dx * bl * R, ty = hy - dy * bl * R;
+        if (mode === 1) {
+          ctx.moveTo(hx + dx * r0 * R, hy - dy * r0 * R);
+          ctx.lineTo(tx, ty);
+          return;
+        }
+        var C = (0.12 + 0.95 * e) * s.open, cc = Math.cos(C), sc = Math.sin(C);
+        var L = 0.36 * s.len * (0.25 + 0.75 * e) * R;
+        var ux = rot[o + 3], uy = rot[o + 4], vx = rot[o + 6], vy = rot[o + 7], px = rot[o + 9], py = rot[o + 10];
+        var f = s.fil;
+        var sz = rot[o + 2];
+        var rl = Math.hypot(dx, dy), rx = rl > 0.001 ? dx / rl : 0, ry = rl > 0.001 ? dy / rl : 0;
+        var bias = Math.max(0, Math.min(1, sz)) * 0.62 * Math.max(0, Math.min(1, (rl - 0.12) / 0.35));
+        var step = (sz > 0.55 && rl > 0.35) ? 6 : 3;
+        for (var k = 0; k < f.length; k += step) {
+          var ex = cc * px + sc * (f[k] * ux + f[k + 1] * vx);
+          var ey = cc * py + sc * (f[k] * uy + f[k + 1] * vy);
+          // every hair keeps a long visible strand, even when its seed faces us
+          var m = Math.hypot(ex, ey);
+          if (m < 0.85) {
+            if (m > 0.02) { ex *= 0.85 / m; ey *= 0.85 / m; }
+            else { ex = f[k] * 0.85; ey = f[k + 1] * 0.85; }
+            m = 0.85;
+          }
+          // front hairs fan outward from the centre, like the fuzz at the rim
+          if (bias > 0 && rl > 0.001) {
+            var bx2 = ex / m * (1 - bias) + rx * bias, by2 = ey / m * (1 - bias) + ry * bias;
+            var bn = Math.hypot(bx2, by2) || 1;
+            ex = bx2 / bn * m; ey = by2 / bn * m;
+          }
+          ctx.moveTo(tx, ty);
+          ctx.lineTo(tx + ex * L * f[k + 2], ty - ey * L * f[k + 2]);
+        }
+      };
+      var alphas = [0.04, 0.07, 0.22, 0.42];
+      var drawBucket = function (b, mode, mul) {
+        var depth = b >> 1, light = b & 1;
+        ctx.beginPath();
+        for (var i = 0; i < N; i++) if (bk[i] === b) seedPath(i, eOf(S[i]), mode);
+        ctx.strokeStyle = 'rgba(248,240,230,' + (alphas[depth] * mul * (light ? 1.2 : 0.72)).toFixed(3) + ')';
+        ctx.lineWidth = depth === 3 ? 0.65 : depth > 1 ? 0.6 : 0.45;
+        ctx.stroke();
+      };
+      var drawDepth = function (dep, beakMul) {
+        for (var l = 0; l < 2; l++) { drawBucket(dep * 2 + l, 1, beakMul); drawBucket(dep * 2 + l, 2, 1); }
+      };
+      // how full the head is right now (it empties when the wish bursts)
+      var cnt = 0;
+      for (var c = 0; c < N; c++) if (!S[c].gone) cnt++;
+      var full = cnt / N;
+      // back hemisphere
+      drawDepth(0, 0.2);
+      drawDepth(1, 0.25);
+      ctx.beginPath();
+      ctx.arc(hx, hy, r0 * R * 1.05, 0, Math.PI * 2);
+      ctx.fillStyle = '#6B4A2E';
+      ctx.fill();
+      if (full > 0.02) {
+        // the dense front fluff hides the inside of the head
+        var pe = (1 - Math.pow(1 - Math.min(1, p / 0.85), 3)) * Math.min(1, full * 1.3);
+        var rr = R * (0.2 + 0.62 * pe);
+        var oc = ctx.createRadialGradient(hx, hy, 0, hx, hy, rr);
+        oc.addColorStop(0, 'rgba(42,19,14,0.55)');
+        oc.addColorStop(0.5, 'rgba(42,19,14,0.72)');
+        oc.addColorStop(1, 'rgba(42,19,14,0)');
+        ctx.fillStyle = oc;
+        ctx.beginPath();
+        ctx.arc(hx, hy, rr, 0, Math.PI * 2);
+        ctx.fill();
+        // soft body light from the upper left gives the sphere volume
+        var hzg = ctx.createRadialGradient(hx - rr * 0.3, hy - rr * 0.35, rr * 0.05, hx, hy, rr);
+        hzg.addColorStop(0, 'rgba(250,242,232,0.08)');
+        hzg.addColorStop(0.7, 'rgba(250,242,232,0.02)');
+        hzg.addColorStop(1, 'rgba(250,242,232,0)');
+        ctx.fillStyle = hzg;
+        ctx.beginPath();
+        ctx.arc(hx, hy, rr, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      // front hemisphere: stalks pointing at us sit hidden behind their own fluff
+      drawDepth(2, 0.25);
+      drawDepth(3, 0.12);
+    }
+
+    // detach, regrow, ambient drift
+    if (this.pending.length) {
+      var keep = [];
+      for (var q = 0; q < this.pending.length; q++) {
+        var pq = this.pending[q];
+        if (t >= pq.at) this._detach(pq.i, t, hx, hy, pq.kind); else keep.push(pq);
+      }
+      this.pending = keep;
+    }
+    for (var j = 0; j < N; j++) {
+      var sj = S[j];
+      if (sj.gone && t >= sj.regrow) { sj.gone = false; sj.born = t; }
+    }
+    if (!red && !this.wished && p >= 1 && t >= this.nextAmbient) {
+      var one = this._pick(1);
+      if (one.length) this.pending.push({ i: one[0], at: t });
+      this.nextAmbient = t + 1400 + Math.random() * 2200;
+    }
+
+    // seeds on the wind
+    var windX = 55 + 25 * Math.sin(t / 3100) + g * 170, windY = -16;
+    var kk = 1 - Math.exp(-dt * 0.9), kb = 1 - Math.exp(-dt * 1.5), ke = 1 - Math.exp(-dt * 1.3);
+    var fr = this.free, alive = [], guide = null;
+    for (var mI = 0; mI < fr.length; mI++) {
+      var f = fr[mI];
+      f.age += dt;
+      if (f.guide) {
+        var gu = Math.max(0, Math.min(1, (t - f.g0) / (f.g1 - f.g0)));
+        var ge = 0.5 - 0.5 * Math.cos(Math.PI * gu);
+        var T = this.landing || [W * 0.75, H * 0.55];
+        var P0 = f.p0, P1 = [P0[0] - R * 0.25, P0[1] - R * 1.1], P2 = [T[0] + R * 0.5, T[1] - R * 0.7];
+        var a1 = 1 - ge;
+        var nx = a1 * a1 * a1 * P0[0] + 3 * a1 * a1 * ge * P1[0] + 3 * a1 * ge * ge * P2[0] + ge * ge * ge * T[0];
+        var ny = a1 * a1 * a1 * P0[1] + 3 * a1 * a1 * ge * P1[1] + 3 * a1 * ge * ge * P2[1] + ge * ge * ge * T[1];
+        var wob = Math.sin(Math.PI * gu);
+        nx += Math.sin(t / 620 + f.ph) * 14 * wob;
+        ny += Math.cos(t / 540) * 10 * wob;
+        if (gu >= 1) { nx = T[0] + Math.sin(t / 1500) * 7; ny = T[1] + Math.sin(t / 1150) * 9; }
+        f.vx = (nx - f.x) / dt; f.vy = (ny - f.y) / dt;
+        f.x = nx; f.y = ny;
+        f.sc = 1 - 0.22 * ge;
+        guide = f;
+      } else {
+        var kf = f.burst ? kb : kk;
+        f.vx += (windX + 20 * Math.sin(f.ph + t / 900) - f.vx) * kf;
+        f.vy += (windY + 22 * Math.sin(f.ph * 1.7 + t / 650) - f.vy) * kf;
+        f.x += f.vx * dt;
+        f.y += f.vy * dt;
+        if (f.x < -R * 1.3 || f.x > W + R * 1.3 || f.y < -R * 1.3 || f.y > H + R) continue;
+        f.fade = f.life ? Math.max(0, Math.min(1, 1 - (f.age - f.life) / 1.0)) : 1;
+        if (f.fade <= 0) continue;
+        f.fb = Math.min(3, Math.floor(f.fade * 3.999));
+      }
+      alive.push(f);
+      var tl = f.tilt + Math.max(-600, Math.min(600, f.vx)) * 0.0016;
+      var tg = [Math.sin(tl), Math.cos(tl), 0.25 * Math.sin(f.ph + t / 1300)];
+      var d = f.d;
+      d[0] += (tg[0] - d[0]) * ke; d[1] += (tg[1] - d[1]) * ke; d[2] += (tg[2] - d[2]) * ke;
+      var dl = Math.hypot(d[0], d[1], d[2]) || 1;
+      d[0] /= dl; d[1] /= dl; d[2] /= dl;
+    }
+    this.free = alive;
+
+    var drawFree = function (f) {
+      var d = f.d, sc = f.sc || 1;
+      var a = Math.abs(d[1]) < 0.9 ? [0, 1, 0] : [1, 0, 0];
+      var u = [d[1] * a[2] - d[2] * a[1], d[2] * a[0] - d[0] * a[2], d[0] * a[1] - d[1] * a[0]];
+      var ul = Math.hypot(u[0], u[1], u[2]) || 1;
+      u = [u[0] / ul, u[1] / ul, u[2] / ul];
+      var v = [d[1] * u[2] - d[2] * u[1], d[2] * u[0] - d[0] * u[2], d[0] * u[1] - d[1] * u[0]];
+      var bl = 0.56 * f.len * R * sc;
+      var tx = f.x + d[0] * bl, ty = f.y - d[1] * bl;
+      ctx.moveTo(f.x, f.y);
+      ctx.lineTo(tx, ty);
+      var C = 1.07 * f.open, cc = Math.cos(C), sn = Math.sin(C), L = 0.36 * f.len * R * sc;
+      var w = f.spin * f.age, cw = Math.cos(w), sw = Math.sin(w);
+      var fl = f.fil;
+      for (var k = 0; k < fl.length; k += 3) {
+        var fc = fl[k] * cw - fl[k + 1] * sw, fs = fl[k] * sw + fl[k + 1] * cw;
+        var ex = cc * d[0] + sn * (fc * u[0] + fs * v[0]);
+        var ey = cc * d[1] + sn * (fc * u[1] + fs * v[1]);
+        ctx.moveTo(tx, ty);
+        ctx.lineTo(tx + ex * L * fl[k + 2], ty - ey * L * fl[k + 2]);
+      }
+    };
+    var fa = [0.08, 0.15, 0.23, 0.32];
+    for (var b = 0; b < 4; b++) {
+      ctx.beginPath();
+      var any = false;
+      for (var n = 0; n < alive.length; n++) if (!alive[n].guide && alive[n].fb === b) { drawFree(alive[n]); any = true; }
+      if (!any) continue;
+      ctx.strokeStyle = 'rgba(248,240,230,' + fa[b] + ')';
+      ctx.lineWidth = 0.6;
+      ctx.stroke();
+    }
+    if (guide) {
+      ctx.beginPath();
+      drawFree(guide);
+      ctx.strokeStyle = 'rgba(250,244,236,0.6)';
+      ctx.lineWidth = 0.8;
+      ctx.stroke();
+    }
   }
 
   _pick(n) {
@@ -194,275 +1095,9 @@ class Component extends DCLogic {
     for (var j = 0; j < Math.min(n, c.length); j++) { out.push(c[j][1]); S[c[j][1]].pend = true; }
     return out;
   }
-
-  _blow() {
-    if (!this.seeds || !this.cv) return;
-    var t = performance.now() - this.t0;
-    var ids = this._pick(180);
-    for (var r = 0; r < ids.length; r++) {
-      this.pending.push({ i: ids[r], at: t + (r / ids.length) * 1300 + Math.random() * 250 });
-    }
-    this.gust = Math.min(1.6, (this.gust || 0) + 0.9);
-  }
-
-  _detach(i, t, hx, hy) {
-    var s = this.seeds[i];
-    s.pend = false;
-    if (s.gone) return;
-    var o = i * 12, rot = this.rot, R = this.R;
-    s.gone = true;
-    s.regrow = t + 9000 + Math.random() * 6000;
-    if (this.free.length > 420) return;
-    var d = [rot[o], rot[o + 1], rot[o + 2]];
-    this.free.push({
-      x: hx + d[0] * 0.1 * R, y: hy - d[1] * 0.1 * R,
-      vx: d[0] * 70 + 25, vy: -d[1] * 70 - 10,
-      d: d, fil: s.fil, len: s.len, open: s.open,
-      ph: Math.random() * 6.28, age: 0, tilt: (Math.random() - 0.5) * 0.7, spin: (Math.random() - 0.5) * 0.8
-    });
-  }
-
-  _frame(now) {
-    var ctx = this.ctx, W = this.W, H = this.H, R = this.R;
-    if (!ctx || !W) return;
-    var t = now - this.t0, dt = Math.min(0.05, Math.max(0, (now - this.last) / 1000));
-    this.last = now;
-    var red = this.reduced;
-    ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
-    ctx.clearRect(0, 0, W, H);
-
-    this.gust *= Math.pow(0.3, dt);
-    var g = this.gust;
-    var sway = red ? 0 : (Math.sin(t / 1900) * 0.03 + Math.sin(t / 830 + 1) * 0.01 + g * 0.05);
-    var p = red ? 1 : Math.min(1, t / 4200);
-    var ay = red ? 0.5 : 0.5 + t * 0.00005, ax = -0.22;
-    var cya = Math.cos(ay), sya = Math.sin(ay), cxa = Math.cos(ax), sxa = Math.sin(ax), cs = Math.cos(sway), ss = Math.sin(sway);
-
-    var bx = this.cx, by = H + 40, Ls = by - this.cy;
-    var hx = bx + Math.sin(sway) * Ls, hy = by - Math.cos(sway) * Ls;
-
-    // soft light behind the head
-    var gr = ctx.createRadialGradient(hx, hy, R * 0.1, hx, hy, R * 1.6);
-    gr.addColorStop(0, 'rgba(255,236,220,0.07)');
-    gr.addColorStop(1, 'rgba(255,236,220,0)');
-    ctx.fillStyle = gr;
-    ctx.fillRect(hx - R * 1.6, hy - R * 1.6, R * 3.2, R * 3.2);
-
-    // stem
-    var grow = red ? 1 : Math.min(1, t / 900);
-    ctx.lineCap = 'round';
-    ctx.beginPath();
-    ctx.moveTo(bx, by);
-    ctx.quadraticCurveTo(bx + Math.sin(sway) * Ls * 0.35 - R * 0.06, by - Ls * 0.55, hx, hy);
-    ctx.strokeStyle = 'rgba(143,163,117,' + (0.9 * grow) + ')';
-    ctx.lineWidth = Math.max(3, R * 0.028);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(bx - 1, by);
-    ctx.quadraticCurveTo(bx + Math.sin(sway) * Ls * 0.35 - R * 0.06 - 1, by - Ls * 0.55, hx - 1, hy);
-    ctx.strokeStyle = 'rgba(210,225,180,' + (0.25 * grow) + ')';
-    ctx.lineWidth = 1;
-    ctx.stroke();
-
-    var rot = this.rot, bk = this.bk, S = this.seeds, N = this.N;
-    var R3 = function (x, y, z, o) {
-      var x1 = x * cya + z * sya, z1 = -x * sya + z * cya;
-      var y1 = y * cxa - z1 * sxa, z2 = y * sxa + z1 * cxa;
-      rot[o] = x1 * cs + y1 * ss;
-      rot[o + 1] = -x1 * ss + y1 * cs;
-      rot[o + 2] = z2;
-    };
-    for (var i = 0; i < N; i++) {
-      var s = S[i];
-      if (s.gone) { bk[i] = 255; continue; }
-      var o = i * 12;
-      R3(s.d[0], s.d[1], s.d[2], o);
-      R3(s.u[0], s.u[1], s.u[2], o + 3);
-      R3(s.v[0], s.v[1], s.v[2], o + 6);
-      R3(s.a[0], s.a[1], s.a[2], o + 9);
-      var z = rot[o + 2];
-      var lit = rot[o] * -0.45 + rot[o + 1] * 0.55 + z * 0.7;
-      bk[i] = (z < -0.45 ? 0 : z < 0 ? 1 : z < 0.45 ? 2 : 3) * 2 + (lit > 0.25 ? 1 : 0);
-    }
-
-    var r0 = 0.1;
-    var eOf = function (s) {
-      var e = Math.max(0, Math.min(1, (p - s.delay) / 0.6));
-      e = 1 - Math.pow(1 - e, 3);
-      var rg = Math.max(0, Math.min(1, (t - s.born) / 2600));
-      rg = 1 - Math.pow(1 - rg, 3);
-      return Math.min(e, rg);
-    };
-    var seedPath = function (i, e, mode) {
-      var s = S[i], o = i * 12;
-      var dx = rot[o], dy = rot[o + 1];
-      var bl = r0 + 0.56 * s.len * e;
-      var tx = hx + dx * bl * R, ty = hy - dy * bl * R;
-      if (mode === 1) {
-        ctx.moveTo(hx + dx * r0 * R, hy - dy * r0 * R);
-        ctx.lineTo(tx, ty);
-        return;
-      }
-      var C = (0.12 + 0.95 * e) * s.open, cc = Math.cos(C), sc = Math.sin(C);
-      var L = 0.36 * s.len * (0.25 + 0.75 * e) * R;
-      var ux = rot[o + 3], uy = rot[o + 4], vx = rot[o + 6], vy = rot[o + 7], px = rot[o + 9], py = rot[o + 10];
-      var f = s.fil;
-      var sz = rot[o + 2];
-      var rl = Math.hypot(dx, dy), rx = rl > 0.001 ? dx / rl : 0, ry = rl > 0.001 ? dy / rl : 0;
-      var bias = Math.max(0, Math.min(1, sz)) * 0.62 * Math.max(0, Math.min(1, (rl - 0.12) / 0.35));
-      var step = (sz > 0.55 && rl > 0.35) ? 6 : 3;
-      for (var k = 0; k < f.length; k += step) {
-        var ex = cc * px + sc * (f[k] * ux + f[k + 1] * vx);
-        var ey = cc * py + sc * (f[k] * uy + f[k + 1] * vy);
-        // every hair keeps a long visible strand, even when its seed faces us
-        var m = Math.hypot(ex, ey);
-        if (m < 0.85) {
-          if (m > 0.02) { ex *= 0.85 / m; ey *= 0.85 / m; }
-          else { ex = f[k] * 0.85; ey = f[k + 1] * 0.85; }
-          m = 0.85;
-        }
-        // front hairs fan outward from the centre, like the fuzz at the rim
-        if (bias > 0 && rl > 0.001) {
-          var bx2 = ex / m * (1 - bias) + rx * bias, by2 = ey / m * (1 - bias) + ry * bias;
-          var bn = Math.hypot(bx2, by2) || 1;
-          ex = bx2 / bn * m; ey = by2 / bn * m;
-        }
-        ctx.moveTo(tx, ty);
-        ctx.lineTo(tx + ex * L * f[k + 2], ty - ey * L * f[k + 2]);
-      }
-    };
-    var alphas = [0.04, 0.07, 0.22, 0.42];
-    var drawBucket = function (b, mode, mul) {
-      var depth = b >> 1, light = b & 1;
-      ctx.beginPath();
-      for (var i = 0; i < N; i++) if (bk[i] === b) seedPath(i, eOf(S[i]), mode);
-      ctx.strokeStyle = 'rgba(248,240,230,' + (alphas[depth] * mul * (light ? 1.2 : 0.72)).toFixed(3) + ')';
-      ctx.lineWidth = depth === 3 ? 0.65 : depth > 1 ? 0.6 : 0.45;
-      ctx.stroke();
-    };
-    var drawDepth = function (dep, beakMul) {
-      for (var l = 0; l < 2; l++) { drawBucket(dep * 2 + l, 1, beakMul); drawBucket(dep * 2 + l, 2, 1); }
-    };
-    // back hemisphere
-    drawDepth(0, 0.2);
-    drawDepth(1, 0.25);
-    ctx.beginPath();
-    ctx.arc(hx, hy, r0 * R * 1.05, 0, Math.PI * 2);
-    ctx.fillStyle = '#6B4A2E';
-    ctx.fill();
-    // the dense front fluff hides the inside of the head
-    var pe = 1 - Math.pow(1 - Math.min(1, p / 0.85), 3);
-    var rr = R * (0.2 + 0.62 * pe);
-    var oc = ctx.createRadialGradient(hx, hy, 0, hx, hy, rr);
-    oc.addColorStop(0, 'rgba(42,19,14,0.55)');
-    oc.addColorStop(0.5, 'rgba(42,19,14,0.72)');
-    oc.addColorStop(1, 'rgba(42,19,14,0)');
-    ctx.fillStyle = oc;
-    ctx.beginPath();
-    ctx.arc(hx, hy, rr, 0, Math.PI * 2);
-    ctx.fill();
-    // soft body light from the upper left gives the sphere volume
-    var hz = ctx.createRadialGradient(hx - rr * 0.3, hy - rr * 0.35, rr * 0.05, hx, hy, rr);
-    hz.addColorStop(0, 'rgba(250,242,232,0.08)');
-    hz.addColorStop(0.7, 'rgba(250,242,232,0.02)');
-    hz.addColorStop(1, 'rgba(250,242,232,0)');
-    ctx.fillStyle = hz;
-    ctx.beginPath();
-    ctx.arc(hx, hy, rr, 0, Math.PI * 2);
-    ctx.fill();
-    // front hemisphere: stalks pointing at us sit hidden behind their own fluff
-    drawDepth(2, 0.25);
-    drawDepth(3, 0.12);
-
-    // detach, regrow, ambient drift
-    if (this.pending.length) {
-      var keep = [];
-      for (var q = 0; q < this.pending.length; q++) {
-        var pq = this.pending[q];
-        if (t >= pq.at) this._detach(pq.i, t, hx, hy); else keep.push(pq);
-      }
-      this.pending = keep;
-    }
-    for (var j = 0; j < N; j++) {
-      var sj = S[j];
-      if (sj.gone && t >= sj.regrow) { sj.gone = false; sj.born = t; }
-    }
-    if (!red && p >= 1 && t >= this.nextAmbient) {
-      var one = this._pick(1);
-      if (one.length) this.pending.push({ i: one[0], at: t });
-      this.nextAmbient = t + 1400 + Math.random() * 2200;
-    }
-
-    // seeds on the wind
-    var windX = 55 + 25 * Math.sin(t / 3100) + g * 170, windY = -16;
-    var kk = 1 - Math.exp(-dt * 0.9), ke = 1 - Math.exp(-dt * 1.3);
-    var fr = this.free, alive = [];
-    ctx.beginPath();
-    for (var m = 0; m < fr.length; m++) {
-      var f = fr[m];
-      f.age += dt;
-      f.vx += (windX + 20 * Math.sin(f.ph + t / 900) - f.vx) * kk;
-      f.vy += (windY + 22 * Math.sin(f.ph * 1.7 + t / 650) - f.vy) * kk;
-      f.x += f.vx * dt;
-      f.y += f.vy * dt;
-      if (f.x < -R * 1.3 || f.x > W + R * 1.3 || f.y < -R * 1.3 || f.y > H + R) continue;
-      alive.push(f);
-      var tl = f.tilt + f.vx * 0.0016;
-      var tg = [Math.sin(tl), Math.cos(tl), 0.25 * Math.sin(f.ph + t / 1300)];
-      var d = f.d;
-      d[0] += (tg[0] - d[0]) * ke; d[1] += (tg[1] - d[1]) * ke; d[2] += (tg[2] - d[2]) * ke;
-      var dl = Math.hypot(d[0], d[1], d[2]) || 1;
-      d[0] /= dl; d[1] /= dl; d[2] /= dl;
-      var a = Math.abs(d[1]) < 0.9 ? [0, 1, 0] : [1, 0, 0];
-      var u = [d[1] * a[2] - d[2] * a[1], d[2] * a[0] - d[0] * a[2], d[0] * a[1] - d[1] * a[0]];
-      var ul = Math.hypot(u[0], u[1], u[2]) || 1;
-      u = [u[0] / ul, u[1] / ul, u[2] / ul];
-      var v = [d[1] * u[2] - d[2] * u[1], d[2] * u[0] - d[0] * u[2], d[0] * u[1] - d[1] * u[0]];
-      var bl = 0.56 * f.len * R;
-      var tx = f.x + d[0] * bl, ty = f.y - d[1] * bl;
-      ctx.moveTo(f.x, f.y);
-      ctx.lineTo(tx, ty);
-      var C = 1.07 * f.open, cc = Math.cos(C), sc = Math.sin(C), L = 0.36 * f.len * R;
-      var w = f.spin * f.age, cw = Math.cos(w), sw = Math.sin(w);
-      var fl = f.fil;
-      for (var k = 0; k < fl.length; k += 3) {
-        var fc = fl[k] * cw - fl[k + 1] * sw, fs = fl[k] * sw + fl[k + 1] * cw;
-        var ex = cc * d[0] + sc * (fc * u[0] + fs * v[0]);
-        var ey = cc * d[1] + sc * (fc * u[1] + fs * v[1]);
-        ctx.moveTo(tx, ty);
-        ctx.lineTo(tx + ex * L * fl[k + 2], ty - ey * L * fl[k + 2]);
-      }
-    }
-    this.free = alive;
-    ctx.strokeStyle = 'rgba(248,240,230,0.32)';
-    ctx.lineWidth = 0.6;
-    ctx.stroke();
-  }
 }
 
-(function () {
-  var c = new Component();
-  var accent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim();
-  c.props = { accent: accent || '#E8B15A' };
-  var vals = {};
-  function render() {
-    vals = c.renderVals();
-    document.querySelectorAll('[data-if]').forEach(function (el) {
-      el.style.display = vals[el.getAttribute('data-if')] ? 'contents' : 'none';
-    });
-  }
-  c._render = render;
-  render();
-  document.querySelectorAll('[data-on-click]').forEach(function (el) {
-    el.addEventListener('click', function (e) { vals[el.getAttribute('data-on-click')](e); });
-  });
-  document.querySelectorAll('[data-on-mousemove]').forEach(function (el) {
-    el.addEventListener('mousemove', function (e) { vals[el.getAttribute('data-on-mousemove')](e); });
-  });
-  document.querySelectorAll('[data-ref]').forEach(function (el) {
-    vals[el.getAttribute('data-ref')](el);
-  });
-})();
+window.__dcMount(Component);
 </script>
 </body>
 </html>
